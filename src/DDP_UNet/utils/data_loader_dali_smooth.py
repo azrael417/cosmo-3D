@@ -26,7 +26,11 @@ class DaliInputIterator(object):
             self.Hydro = f['Hydro'][...]
             self.Nbody = f['Nbody'][...]
         self.length = self.Nbody.shape[1]
+        self.batch_size = params.batch_size
         self.size = params.data_size
+        # compute the extract size such that the cubic diagonal of size^3 fits into extracted cube
+        self.extract_size = int(self.size * np.sqrt(3))
+        self.extract_size += 0 if self.extract_size % 2 == 0 else 1
         self.Nsamples = params.Nsamples
         self.rng = np.random.RandomState(seed=12345)
         self.max_bytes = 5 * (self.size**3) * 4
@@ -44,19 +48,19 @@ class DaliInputIterator(object):
         y = rand[1]
         z = rand[2]
         if self.transposed:
-            inp = np.expand_dims(np.copy(self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]), axis=0)
+            inp = np.expand_dims(np.copy(self.Nbody[x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size, :]), axis=0)
+            tar = np.expand_dims(np.copy(self.Hydro[x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size, :]), axis=0)
         else:
-            inp = np.expand_dims(np.copy(self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]), axis=0)
+            inp = np.expand_dims(np.copy(self.Nbody[:, x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size]), axis=0)
+            tar = np.expand_dims(np.copy(self.Hydro[:, x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size]), axis=0)
 
-        #rotation axis
-        angles = self.rng.random_sample(size=(1,2)).astype(np.float32)
-        angles[:, 0] *= 2. * np.pi
-        angles[:, 1] *= np.pi
-        axis = np.stack([ np.cos(angles[:, 0]) * np.sin(angles[:, 1]), np.sin(angles[:, 0]) * np.sin(angles[:, 1]), np.cos(angles[:, 1]) ], axis=1)
+        ##rotation axis
+        #angles = self.rng.random_sample(size=(1,2)).astype(np.float32)
+        #angles[:, 0] *= 2. * np.pi
+        #angles[:, 1] *= np.pi
+        #axis = np.stack([ np.cos(angles[:, 0]) * np.sin(angles[:, 1]), np.sin(angles[:, 0]) * np.sin(angles[:, 1]), np.cos(angles[:, 1]) ], axis=1)
     
-        return inp, tar, axis
+        return inp, tar
     
     next = __next__
 
@@ -71,26 +75,29 @@ class DaliPipeline(Pipeline):
         self.iterator = iter(dii)
         self.input = ops.ExternalSource()
         self.target = ops.ExternalSource()
-        self.axis = ops.ExternalSource()
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
         self.rng_angle = ops.Uniform(device = "cpu",
                                      range = [0., 180.])
+        self.rng_axis = ops.Uniform(device = "cpu",
+                                    range = [-1., 1.],
+                                    shape=(3))
         self.rotate = ops.Rotate(device = "gpu",
-                                 axis = (1., 1., 1.),
-                                 interp_type = types.INTERP_LINEAR)
+                                 axis = (1.,1.,1.),
+                                 interp_type = types.INTERP_LINEAR,
+                                 keep_size=True)
         self.transpose = ops.Transpose(device = "gpu",
                                        perm=[3,0,1,2])
         self.crop = ops.Crop(device = "gpu",
-                             crop = (params.data_size, params.data_size, params.data_size))
+                             crop = (dii.size, dii.size, dii.size))
 
     def define_graph(self):
         self.inp = self.input()
         self.tar = self.target()
-        self.axs = self.axis()
         if self.do_rotate:
             # rotate
             angle = self.rng_angle()
+            #axis = self.rng_axis()
             dinp = self.rotate(self.inp.gpu(), angle=angle)
             dtar = self.rotate(self.tar.gpu(), angle=angle)
             # crop because rotation can be bigger
@@ -105,7 +112,7 @@ class DaliPipeline(Pipeline):
         return self.dinp, self.dtar
 
     def iter_setup(self):
-        inp, tar, axs = self.iterator.next()
+        inp, tar = self.iterator.next()
         self.feed_input(self.inp, inp)
         self.feed_input(self.tar, tar)
         #self.feed_input(self.axs, axs)

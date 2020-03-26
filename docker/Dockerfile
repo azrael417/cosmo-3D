@@ -1,14 +1,11 @@
 #FROM gitlab-master.nvidia.com:5005/dl/dgx/pytorch:19.10-py3-devel
-FROM nvcr.io/nvidia/pytorch:20.01-py3
-
-#install and update NCCL
-COPY ./sys/nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb /opt/
-RUN cd /opt && dpkg -i nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb \
-    && rm nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb \
-    && apt-get update && apt-get install --reinstall --assume-yes libnccl2 libnccl-dev
+FROM nvcr.io/nvidia/pytorch:20.03-py3
 
 #install horovod
-RUN HOROVOD_GPU_ALLREDUCE=NCCL pip install --no-cache-dir horovod
+RUN HOROVOD_GPU_ALLREDUCE=NCCL && \
+    HOROVOD_NCCL_INCLUDE=/usr/lib/x86_64-linux-gnu && \
+    HOROVOD_NCCL_LIB=/usr/lib/x86_64-linux-gnu && \
+    pip install --no-cache-dir horovod
 
 #install mpi4py
 RUN pip install mpi4py
