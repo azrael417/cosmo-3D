@@ -33,7 +33,8 @@ class DaliInputIterator(object):
         self.extract_size += 0 if self.extract_size % 2 == 0 else 1
         self.Nsamples = params.Nsamples
         self.rng = np.random.RandomState(seed=12345)
-        self.max_bytes = 5 * (self.size**3) * 4
+        self.max_bytes_big = 5 * (self.extract_size**3) * 4
+        self.max_bytes_small = 5 * (self.size**3) * 4
         self.transposed = False if params.transposed_input==0 else True
         print("Transposed Input" if self.transposed else "Original Input")
 
@@ -115,7 +116,6 @@ class DaliPipeline(Pipeline):
         inp, tar = self.iterator.next()
         self.feed_input(self.inp, inp)
         self.feed_input(self.tar, tar)
-        #self.feed_input(self.axs, axs)
 
 
 class RandomCropDataLoader(object):
