@@ -75,3 +75,6 @@ for run in range(num_benchmark):
     
     if comm_rank == 0:
         print("Run {}: iterations took {}s for {} iterations ({} iter/s)".format(run, tend - tstart, it, float(it)/(tend - tstart)))
+
+if comm_rank == 0:
+    print("finished timing")
