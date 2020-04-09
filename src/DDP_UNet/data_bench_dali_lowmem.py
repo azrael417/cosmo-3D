@@ -40,10 +40,13 @@ train_data_loader = get_data_loader_distributed(params, comm_rank, comm_local_ra
 
 it = 0
 # sync here so that we can start a timer
+if comm_rank == 0:
+    print("starting timing")
 dist.barrier()
 tstart = time.time()
 for inp, tar in train_data_loader:
     it += 1
 dist.barrier()
 tend = time.time()
-print("Iterations took {}s for {} iterations ({} iter/s)".format(tend - tstart, it, float(it)/(tend - tstart)))
+if comm_rank == 0:
+    print("Iterations took {}s for {} iterations ({} iter/s)".format(tend - tstart, it, float(it)/(tend - tstart)))
