@@ -32,8 +32,8 @@ device = torch.device("cuda:{}".format(comm_local_rank))
 # stage in?
 if stage:
     # copy the input file into local DRAM for each socket:
-    #tmpfs_root = '/dev/shm'
-    tmpfs_root = '/tmp'
+    tmpfs_root = '/dev/shm'
+    #tmpfs_root = '/tmp'
     #tmpfs_root = '/run/cosmo_data'
     gpus_per_socket = torch.cuda.device_count() // 2
     socket = 0 if comm_rank < gpus_per_socket else 1

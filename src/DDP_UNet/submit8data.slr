@@ -18,6 +18,10 @@ outputfile="dali_lowmem_ngpu${totalranks}.out"
 #set HDF5 variables
 export HDF5_USE_FILE_LOCKING=FALSE
 
-srun -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores shifter \
+#set up /dev/shm
+mkdir -p /dev/shm/numa0 /dev/shm/numa1
+
+srun -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
+     shifter \
      python data_bench_dali_lowmem.py |& tee ${outputfile} 
 
