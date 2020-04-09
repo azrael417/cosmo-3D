@@ -4,7 +4,7 @@ default: &DEFAULT
 
   lr: 1E-4
 
-  data_path: '/data1/cosmo_data/DDP_trdat_tra.h5'
+  data_path: '/data/DDP_trdat_tra.h5'
   transposed_input: 1
   rotate_input: 1
   ngpu: 1

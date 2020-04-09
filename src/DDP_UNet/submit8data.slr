@@ -1,0 +1,16 @@
+#!/bin/bash -l
+#SBATCH --nodes=1
+#SBATCH --time=00:10:00
+#SBATCH -C gpu
+#SBATCH --account m1759
+#SBATCH --gres=gpu:8
+#SBATCH --exclusive
+#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:latest
+#SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data"
+
+#set HDF5 variables
+export HDF5_USE_FILE_LOCKING=FALSE
+
+srun -np ${rankspernode} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores shifter \
+     python data_bench_dali_lowmem.py
+
