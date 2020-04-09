@@ -6,6 +6,11 @@ from utils.data_loader_dali_lowmem import get_data_loader_distributed
 import time
 import torch.distributed as dist
 
+# global parameters
+num_warmup = 1
+num_benchmark = 5
+stage = True
+
 # init process group
 dist.init_process_group(backend = "mpi")
 comm_rank = dist.get_rank()
@@ -16,7 +21,6 @@ params = YParams("config/UNet_transpose.yaml", "default")
 device = torch.device("cuda:{}".format(comm_local_rank))
 
 # stage in?
-stage = True
 if stage:
     # copy the input file into local DRAM for each socket:
     #tmpfs_root = '/dev/shm'
@@ -27,7 +31,8 @@ if stage:
     if comm_rank % (torch.cuda.device_count() / 2) == 0:
         if not os.path.isdir(os.path.dirname(new_data_path)):
             os.makedirs(os.path.dirname(new_data_path))
-        shu.copyfile(params.data_path, new_data_path)
+        if not os.path.isfile(new_data_path):
+            shu.copyfile(params.data_path, new_data_path)
 
     # we need to wait till the stuff is copied
     dist.barrier()
@@ -38,15 +43,25 @@ if stage:
 # get data loader
 train_data_loader = get_data_loader_distributed(params, comm_rank, comm_local_rank)
 
-it = 0
-# sync here so that we can start a timer
+# warmup
+if comm_rank == 0:
+    print("starting warmup")
+for warm in range(num_warmup):
+    for inp, tar in train_data_loader:
+        pass
+
+# timing
 if comm_rank == 0:
     print("starting timing")
-dist.barrier()
-tstart = time.time()
-for inp, tar in train_data_loader:
-    it += 1
-dist.barrier()
-tend = time.time()
-if comm_rank == 0:
-    print("Iterations took {}s for {} iterations ({} iter/s)".format(tend - tstart, it, float(it)/(tend - tstart)))
+
+for run in range(num_benchmark):
+    it = 0
+    dist.barrier()
+    tstart = time.time()
+    for inp, tar in train_data_loader:
+        it += 1
+    dist.barrier()
+    tend = time.time()
+    
+    if comm_rank == 0:
+        print("Run {}: iterations took {}s for {} iterations ({} iter/s)".format(run, tend - tstart, it, float(it)/(tend - tstart)))
