@@ -14,7 +14,7 @@ RUN pip install mpi4py
 RUN pip install h5py ruamel.yaml
 
 #create /data mount point
-RUN mkdir -p /data
+RUN mkdir -p /data /tmp/numa0 /tmp/numa1
 
 # copy source code to op
 COPY src/DDP_UNet /opt/DDP_UNet
