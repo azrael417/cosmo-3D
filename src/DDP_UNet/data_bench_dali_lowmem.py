@@ -11,10 +11,19 @@ num_warmup = 1
 num_benchmark = 5
 stage = True
 
-# init process group
-dist.init_process_group(backend = "mpi")
-comm_rank = dist.get_rank()
+# get env variables
+comm_addr=os.getenv("SLURM_SRUN_COMM_HOST")
+comm_size = int(os.getenv("SLURM_NTASKS"))
+comm_rank = int(os.getenv("PMI_RANK"))
 comm_local_rank = comm_rank % torch.cuda.device_count()
+comm_port = "29500"
+os.environ["MASTER_ADDR"] = comm_addr
+os.environ["MASTER_PORT"] = comm_port
+
+# init process group
+dist.init_process_group(backend = "nccl",
+                        rank = comm_rank,
+                        world_size = comm_size)
 
 # load parameters
 params = YParams("config/UNet_transpose.yaml", "default")
