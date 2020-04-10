@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --nodes=1
-#SBATCH --time=00:30:00
+#SBATCH --time=00:50:00
 #SBATCH -C gpu
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
@@ -9,11 +9,11 @@
 #SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data"
 
 #number of ranks
-rankspernode=8
+rankspernode=1
 totalranks=$(( ${rankspernode} * ${SLURM_NNODES} ))
 
 #run parameters
-outputfile="orig_ngpu${totalranks}.out"
+outputfile="dali_ngpu${totalranks}.out"
 
 #set HDF5 variables
 export HDF5_USE_FILE_LOCKING=FALSE
@@ -23,5 +23,5 @@ mkdir -p /dev/shm/numa0 /dev/shm/numa1
 
 srun -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
      shifter \
-     python data_bench_orig.py |& tee ${outputfile} 
+     python data_bench_dali.py |& tee ${outputfile} 
 

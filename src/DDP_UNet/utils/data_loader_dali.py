@@ -15,8 +15,8 @@ def worker_init(wrk_id):
     np.random.seed(torch.utils.data.get_worker_info().seed%(2**32 - 1))
 
 
-def get_data_loader_distributed(params, world_rank):
-    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=0)
+def get_data_loader_distributed(params, world_rank, device_id=0):
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
     return train_loader
 
 

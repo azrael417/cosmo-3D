@@ -2,6 +2,7 @@ import os
 from utils.YParams import YParams
 import torch
 from utils.data_loader_dali import get_data_loader_distributed
+import time
 import torch.distributed as dist
 
 # global parameters
