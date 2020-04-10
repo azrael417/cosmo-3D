@@ -29,6 +29,9 @@ dist.init_process_group(backend = "nccl",
 params = YParams("config/UNet_transpose.yaml", "default")
 device = torch.device("cuda:{}".format(comm_local_rank))
 
+# setup
+dist.barrier()
+tstart = time.time()
 # stage in?
 if stage:
     # copy the input file into local DRAM for each socket:
@@ -52,6 +55,10 @@ if stage:
 
 # get data loader
 train_data_loader = get_data_loader_distributed(params, comm_rank, comm_local_rank)
+dist.barrier()
+tend = time.time()
+if comm_rank == 0:
+    print("Setup: took {}s".format(tend - tstart))
 
 # warmup
 if comm_rank == 0:
