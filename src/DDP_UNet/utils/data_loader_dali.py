@@ -22,7 +22,7 @@ def get_data_loader_distributed(params, world_rank, device_id=0):
 
 class DaliInputIterator(object):
     def __init__(self, params):
-        with h5py.File(params.data_path, 'r', driver="core", backing_store=False) as f:
+        with h5py.File(params.data_path, 'r') as f:
             self.Hydro = f['Hydro'][...]
             self.Nbody = f['Nbody'][...]
         self.length = self.Nbody.shape[1]

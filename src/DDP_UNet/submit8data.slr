@@ -6,10 +6,10 @@
 #SBATCH --gres=gpu:8
 #SBATCH --exclusive
 #SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:latest
-#SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data"
+#SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
 
 #number of ranks
-rankspernode=1
+rankspernode=8
 totalranks=$(( ${rankspernode} * ${SLURM_NNODES} ))
 
 #run parameters
