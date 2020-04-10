@@ -1,0 +1,53 @@
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+Transposed Input
+Enable Rotation
+Transposed Input
+Enable Rotation
+Setup: took 37.96378231048584s
+starting warmup
+starting timing
+Run 0: iterations took 13.32697319984436s for 20 iterations (1.5007158564882213 iter/s)
+Run 1: iterations took 14.732440948486328s for 20 iterations (1.3575482888363373 iter/s)
+Run 2: iterations took 13.330969333648682s for 20 iterations (1.5002659971258074 iter/s)
+Run 3: iterations took 15.240467548370361s for 20 iterations (1.3122956980501932 iter/s)
+Run 4: iterations took 15.178148031234741s for 20 iterations (1.317683814839761 iter/s)
+finished timing
+Transposed Input
+Enable Rotation
+Transposed Input
+Enable Rotation

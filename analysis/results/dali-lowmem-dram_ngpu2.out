@@ -1,0 +1,31 @@
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+Transposed Input
+Enable Rotation
+Setup: took 24.117101430892944s
+starting warmup
+starting timing
+Run 0: iterations took 12.31296968460083s for 20 iterations (1.6243035199715408 iter/s)
+Run 1: iterations took 13.66996169090271s for 20 iterations (1.4630618908983408 iter/s)
+Run 2: iterations took 13.59160327911377s for 20 iterations (1.4714967461369344 iter/s)
+Run 3: iterations took 13.503917455673218s for 20 iterations (1.4810517070805755 iter/s)
+Run 4: iterations took 12.296607494354248s for 20 iterations (1.626464861075107 iter/s)
+finished timing
+Transposed Input
+Enable Rotation

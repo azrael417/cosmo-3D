@@ -1,0 +1,30 @@
+Original Input
+Enable Rotation
+starting warmup
+Original Input
+Enable Rotation
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+starting timing
+Run 0: iterations took 15.743350505828857s for 20 iterations (1.2703776106995235 iter/s)
+Run 1: iterations took 12.025813579559326s for 20 iterations (1.6630891430077266 iter/s)
+Run 2: iterations took 13.875811338424683s for 20 iterations (1.4413571583101816 iter/s)
+Run 3: iterations took 12.741738319396973s for 20 iterations (1.5696445413224072 iter/s)
+Run 4: iterations took 12.615315198898315s for 20 iterations (1.5853745772239272 iter/s)
+finished timing

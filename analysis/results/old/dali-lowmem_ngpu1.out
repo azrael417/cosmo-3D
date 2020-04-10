@@ -1,0 +1,19 @@
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs1
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs3
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs5
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs7
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs0
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs2
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs4
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs6
+libibverbs: Warning: no userspace device-specific driver found for /sys/class/infiniband_verbs/uverbs8
+Transposed Input
+Enable Rotation
+starting warmup
+starting timing
+Run 0: iterations took 10.488101482391357s for 20 iterations (1.9069228147323252 iter/s)
+Run 1: iterations took 10.481401205062866s for 20 iterations (1.9081418227115792 iter/s)
+Run 2: iterations took 10.590035200119019s for 20 iterations (1.8885678491205795 iter/s)
+Run 3: iterations took 10.475894927978516s for 20 iterations (1.909144768776266 iter/s)
+Run 4: iterations took 10.485304832458496s for 20 iterations (1.907431430900096 iter/s)
+finished timing

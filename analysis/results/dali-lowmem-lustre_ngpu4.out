@@ -1,0 +1,17 @@
+Transposed Input
+Enable Rotation
+Transposed Input
+Enable Rotation
+Transposed Input
+Enable Rotation
+Transposed Input
+Enable Rotation
+Setup: took 3.234191656112671s
+starting warmup
+starting timing
+Run 0: iterations took 13.965689659118652s for 20 iterations (1.4320810850140402 iter/s)
+Run 1: iterations took 14.060575485229492s for 20 iterations (1.4224168862085211 iter/s)
+Run 2: iterations took 13.975182056427002s for 20 iterations (1.4311083690535726 iter/s)
+Run 3: iterations took 13.957189321517944s for 20 iterations (1.4329532643915486 iter/s)
+Run 4: iterations took 13.968850135803223s for 20 iterations (1.4317570741730905 iter/s)
+finished timing
