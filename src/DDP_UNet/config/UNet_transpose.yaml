@@ -9,7 +9,7 @@ default: &DEFAULT
   rotate_input: 1
   ngpu: 1
   Nsamples: 20
-  num_epochs: 2
+  num_epochs: 5
   num_data_workers: 2
   LAMBDA_2: 1E-2
   data_size: 256

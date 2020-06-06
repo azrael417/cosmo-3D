@@ -9,7 +9,7 @@ def worker_init(wrk_id):
     np.random.seed(torch.utils.data.get_worker_info().seed%(2**32 - 1))
 
 
-def get_data_loader_distributed(params, world_rank):
+def get_data_loader_distributed(params, world_rank, local_rank):
     fname = params.data_path
     with h5py.File(fname, 'r') as f:
         Nbody = f['Nbody'][:,:,:,:].astype(np.float32)

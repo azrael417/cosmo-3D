@@ -19,9 +19,7 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-#from utils.data_loader import get_data_loader_distributed
-from utils.data_loader_dali_lowmem import get_data_loader_distributed
-#from utils.data_loader_dali import get_data_loader_distributed
+from utils.data_loader import get_data_loader_distributed
 from utils.plotting import generate_images, meanL1
 from networks import UNet
 
@@ -44,7 +42,6 @@ def train(params, args, world_rank, local_rank):
   
   #logging info
   logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, local_rank))
-  #train_data_loader = get_data_loader_distributed(params, world_rank)
   train_data_loader = get_data_loader_distributed(params, world_rank, local_rank)
   logging.info('rank %d, data loader initialized'%world_rank)
 
@@ -91,17 +88,16 @@ def train(params, args, world_rank, local_rank):
       iters += 1
 
       #adjust_LR(optimizer, params, iters)
-      ##inp, tar = map(lambda x: x.to(device), data)
-      inp, tar = data
+      inp, tar = map(lambda x: x.to(device), data)
       #tr_start = time.time()
       #b_size = inp.size(0)
 
       ## fw pass
-      gen = model(inp)
-      loss = UNet.loss_func(gen, tar, params)
+      #gen = model(inp)
+      #loss = UNet.loss_func(gen, tar, params)
 
-      optimizer.zero_grad()
-      loss.backward() # fixed precision
+      #optimizer.zero_grad()
+      #loss.backward() # fixed precision
 
       # automatic mixed precision:
       #with amp.scale_loss(loss, optimizer) as scaled_loss:
