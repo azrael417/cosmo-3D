@@ -176,6 +176,7 @@ if __name__ == '__main__':
   parser.add_argument("--run_num", default='00', type=str)
   parser.add_argument("--yaml_config", default='./config/UNet.yaml', type=str)
   parser.add_argument("--config", default='default', type=str)
+  parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   args = parser.parse_args()
   
   run_num = args.run_num
@@ -183,10 +184,19 @@ if __name__ == '__main__':
   params = YParams(os.path.abspath(args.yaml_config), args.config)
   params.distributed = True
 
-  # get env variables                                                                                                                                                               
-  comm_addr=os.getenv("SLURM_SRUN_COMM_HOST")
-  comm_size = int(os.getenv("SLURM_NTASKS"))
-  comm_rank = int(os.getenv("PMI_RANK"))
+  # get env variables
+  if (args.comm_mode == "openmpi-nccl"):
+    #use pmix server address: only works for single node
+    addrport = os.getenv("PMIX_SERVER_URI2").split("//")[1]
+    comm_addr = addrport.split(":")[0]
+    comm_rank = os.getenv('OMPI_COMM_WORLD_RANK',0)
+    comm_size = os.getenv("OMPI_COMM_WORLD_SIZE",0)
+  elif (args.comm_mode == "slurm-nccl"):
+    comm_addr=os.getenv("SLURM_SRUN_COMM_HOST")
+    comm_size = int(os.getenv("SLURM_NTASKS"))
+    comm_rank = int(os.getenv("PMI_RANK"))
+  
+  # common stuff
   comm_local_rank = comm_rank % torch.cuda.device_count()
   comm_port = "29500"
   os.environ["MASTER_ADDR"] = comm_addr

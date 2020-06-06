@@ -22,9 +22,9 @@ nvidia-docker run \
 	      --device /dev/nvidia-fs13 \
 	      --device /dev/nvidia-fs14 \
 	      --device /dev/nvidia-fs15 \
-	      --volume "/raid1/data/tkurth/cosmo_data:/data:ro" \
 	      --volume "/raid1/data/tkurth:/data1:rw" \
 	      --volume "/raid3/data/tkurth:/data3:rw" \
 	      --volume "/raid5/data/tkurth:/data5:rw" \
 	      --volume "/raid7/data/tkurth:/data7:rw" \
+	      --volume "/mnt/weka/tkurth/cosmo_data:/data:rw" \
 	      --workdir "/opt/DDP_UNet" -it registry.services.nersc.gov/tkurth/pytorch-cosmo:latest /bin/bash
