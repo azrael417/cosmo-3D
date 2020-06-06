@@ -1,0 +1,49 @@
+FROM tkurth/pytorch-numpy_reader.build
+
+SHELL ["/bin/bash", "-c"]
+
+ARG PYVER
+ARG PYV
+
+
+ENV PYTHONPATH=/opt/python/cp${PYV}-cp${PYV}m
+ENV PYBIN=${PYTHONPATH}/bin \
+    PYINC=${PYTHONPATH}/include \
+    PYLIB=${PYTHONPATH}/lib
+
+#we need to do that so that it compiles
+#RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
+#    ldconfig
+
+#ENV OLD_LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
+#    OLD_LIBRARY_PATH=${LIBRARY_PATH} \
+#    LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/opt/dali/build:${PYLIB}:${LD_LIBRARY_PATH} \
+#    LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/opt/dali/build:${PYLIB}:${LIBRARY_PATH}
+
+#pytorch prereqs
+RUN pip install ninja pyyaml mkl mkl-include setuptools cffi numpy
+
+##clone source
+COPY src/pytorch /opt/pytorch
+
+WORKDIR /opt/pytorch
+
+RUN CMAKE_INCLUDE_PATH=${PYINC} \
+    CMAKE_LIBRARY_PATH=${PYLIB} \
+    NCCL_INCLUDE_DIR=/usr/include \
+    NCCL_LIB_DIR=/usr/lib/x86_64-linux-gnu \
+    USE_SYSTEM_NCCL=1 \
+    python setup.py install
+
+#install horovod
+RUN HOROVOD_GPU_ALLREDUCE=NCCL && \
+    HOROVOD_GPU_BROADCAST=NCCL && \
+    HOROVOD_NCCL_INCLUDE=/usr/include && \
+    HOROVOD_NCCL_LIB=/usr/lib/x86_64-linux-gnu && \
+    HOROVOD_NCCL_LINK=SHARED && \
+    HOROVOD_WITHOUT_TENSORFLOW=1 && \
+    HOROVOD_WITH_MPI=1 && \
+    pip install --no-cache-dir horovod
+
+#install mpi4py
+RUN pip install mpi4py
