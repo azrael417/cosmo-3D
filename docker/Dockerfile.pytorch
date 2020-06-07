@@ -1,4 +1,4 @@
-FROM tkurth/pytorch-numpy_reader.build
+FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.deps
 
 SHELL ["/bin/bash", "-c"]
 
@@ -47,3 +47,8 @@ RUN HOROVOD_GPU_ALLREDUCE=NCCL && \
 
 #install mpi4py
 RUN pip install mpi4py
+
+#apex
+RUN cd /opt && \
+    git clone https://github.com/NVIDIA/apex && cd apex && \
+    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./

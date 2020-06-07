@@ -5,6 +5,7 @@
 
 #inference runs
 nvidia-docker run \
+	      --net host \
 	      --ipc host \
               --device /dev/nvidia-fs0  \
 	      --device /dev/nvidia-fs1  \
@@ -22,6 +23,7 @@ nvidia-docker run \
 	      --device /dev/nvidia-fs13 \
 	      --device /dev/nvidia-fs14 \
 	      --device /dev/nvidia-fs15 \
+	      --device /dev/infiniband \
 	      --volume "/raid1/data/tkurth:/data1:rw" \
 	      --volume "/raid3/data/tkurth:/data3:rw" \
 	      --volume "/raid5/data/tkurth:/data5:rw" \

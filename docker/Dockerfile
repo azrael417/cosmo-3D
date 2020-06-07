@@ -1,5 +1,6 @@
 #FROM gitlab-master.nvidia.com:5005/dl/dgx/pytorch:19.10-py3-devel
-FROM nvcr.io/nvidia/pytorch:20.03-py3
+#FROM nvcr.io/nvidia/pytorch:20.03-py3
+FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.dali
 
 #install horovod
 RUN HOROVOD_GPU_ALLREDUCE=NCCL && \
@@ -11,7 +12,7 @@ RUN HOROVOD_GPU_ALLREDUCE=NCCL && \
 RUN pip install mpi4py
 
 #install other python stuff necessary
-RUN pip install h5py ruamel.yaml
+RUN pip install h5py ruamel.yaml matplotlib
 
 #create /data mount point
 RUN mkdir -p /data /tmp/numa0 /tmp/numa1

@@ -23,23 +23,6 @@ RUN apt update && \
     apt install --assume-yes libnl-route-3-200 libpmi2-0-dev openssh-client libnuma1 gettext
 
 # MOFED
-#COPY sys/mellanox /opt/mellanox
-#ARG MOFED_VERSION=4.6-1.0.1
-#ENV MOFED_VERSION=${MOFED_VERSION}
-#RUN dpkg -i /opt/mellanox/DEBS/${MOFED_VERSION}/*_$(dpkg --print-architecture).deb \
-# && ln -sf /opt/mellanox/change_mofed_version.sh /usr/local/bin/ \
-# && cd /usr/bin \
-# && chmod a+w ibv_* \
-# && cd /usr/lib \
-# && touch libmlx5.so.1.0.0 \
-# && chmod -R a+w libibverbs* libmlx5.so.1.0.0 \
-# && ln -sf libmlx5.so.1.0.0 libmlx5.so.1 \
-# && chmod a+w libmlx5.so.1 \
-# && rm -f /etc/libibverbs.d/*
-#RUN apt install --assume-yes rdma-core libibverbs-dev librdmacm1 lsb-release libnl-3-dev libnl-route-3-dev && \
-#    apt install --assume-yes pciutils chrpath swig lsof debhelper dkms quilt linux-headers-4.15.0-55-generic kmod dpatch
-#COPY sys/mellanox/MLNX_OFED_LINUX-4.6-1.0.1.1-ubuntu18.04-x86_64/ /opt/mellanox
-#RUN cd /opt/mellanox && ./mlnxofedinstall --force --upstream-libs --dpdk
 RUN rm -rf /var/lib/apt/lists/* && \
     wget -qO - https://www.mellanox.com/downloads/ofed/RPM-GPG-KEY-Mellanox | apt-key add - && \
     mkdir -p /etc/apt/sources.list.d && \
@@ -162,11 +145,6 @@ RUN OPENCV_VERSION=3.4.3 && \
 # Clang
 RUN apt update && \
     apt install -y clang
-#RUN CLANG_VERSION=6.0.1 && \
-#    cd /usr/local && \
-#    wget http://releases.llvm.org/${CLANG_VERSION}/clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz && \
-#    tar -xJf clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz --strip 1 && \
-#    rm clang+llvm-${CLANG_VERSION}-x86_64-linux-sles11.3.tar.xz
 
 ENV NVIDIA_DRIVER_CAPABILITIES=video,compute,utility
 
@@ -251,13 +229,13 @@ RUN NCCL_BUILD=nccl_2.6.4-1+cuda10.2_x86_64 && \
     cp -r ${NCCL_BUILD}/include/* /usr/include/ && \
     rm -r ${NCCL_BUILD}
 
-# GDS
-ARG GDS_VERSION
-RUN apt install --assume-yes libudev-dev liburcu-dev \
-    	libmount-dev libnuma-dev libjsoncpp-dev librdmacm-dev
-COPY sys/gds-${GDS_VERSION}/lib/*.so /usr/lib/x86_64-linux-gnu/
-COPY sys/gds-${GDS_VERSION}/lib/cufile.h /usr/include/
-COPY sys/gds-${GDS_VERSION}/config/cufile.json /etc/
+## GDS
+#ARG GDS_VERSION
+#RUN apt install --assume-yes libudev-dev liburcu-dev \
+#    	libmount-dev libnuma-dev libjsoncpp-dev librdmacm-dev
+#COPY sys/gds-${GDS_VERSION}/lib/*.so /usr/lib/x86_64-linux-gnu/
+#COPY sys/gds-${GDS_VERSION}/lib/cufile.h /usr/include/
+#COPY sys/gds-${GDS_VERSION}/config/cufile.json /etc/
 
 
 # set env

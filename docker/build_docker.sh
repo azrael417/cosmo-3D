@@ -2,6 +2,21 @@
 
 #nvidia-docker build -t tkurth/pytorch-bias_gan:latest .
 cd ..
+
+# Base
+#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.deps \
+#	      --build-arg PYVER=3.7 \
+#	      --build-arg PYV=37 \
+#	      -f docker/Dockerfile.deps.ubuntu .
+
+# pytorch
+#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.pytorch -f docker/Dockerfile.pytorch .
+#exit
+
+# dali
+#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.dali -f docker/Dockerfile.dali .
+
+# cosmo 3d
 nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo:latest -f docker/Dockerfile .
 #docker push registry.services.nersc.gov/tkurth/pytorch-cosmo:latest
 

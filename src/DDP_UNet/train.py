@@ -5,15 +5,14 @@ import numpy as np
 import argparse
 
 import torch
-import torchvision
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+#from torch.utils.tensorboard import SummaryWriter
 from apex import amp, optimizers
 #from apex.parallel import DistributedDataParallel as DDP
-#import torch.multiprocessing
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.cuda.amp as amp
 
 import logging
 from utils import logging_utils
@@ -60,6 +59,9 @@ def train(params, args, world_rank, local_rank):
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
     model = DDP(model, device_ids=[local_rank])
+
+  # amp stuff
+  gscaler = amp.GradScaler()
     
   iters = 0
   startEpoch = 0
@@ -91,26 +93,22 @@ def train(params, args, world_rank, local_rank):
       iters += 1
 
       #adjust_LR(optimizer, params, iters)
-      ##inp, tar = map(lambda x: x.to(device), data)
       inp, tar = data
-      #tr_start = time.time()
+      tr_start = time.time()
       #b_size = inp.size(0)
 
-      ## fw pass
-      gen = model(inp)
-      loss = UNet.loss_func(gen, tar, params)
-
+      # fw pass
       optimizer.zero_grad()
-      loss.backward() # fixed precision
+      with amp.autocast():
+        gen = model(inp)
+        loss = UNet.loss_func(gen, tar, params)
 
-      # automatic mixed precision:
-      #with amp.scale_loss(loss, optimizer) as scaled_loss:
-      #  scaled_loss.backward()
-
-      #optimizer.step()
+      gscaler.scale(loss).backward()
+      gscaler.step(optimizer)
+      gscaler.update()
       
-      #tr_end = time.time()
-      #tr_time += tr_end - tr_start
+      tr_end = time.time()
+      tr_time += tr_end - tr_start
       nsteps += 1
       #if world_rank == 0:
       #  print("step {} took {}s".format(iters, tr_end - tr_start))
@@ -189,8 +187,8 @@ if __name__ == '__main__':
     #use pmix server address: only works for single node
     addrport = os.getenv("PMIX_SERVER_URI2").split("//")[1]
     comm_addr = addrport.split(":")[0]
-    comm_rank = os.getenv('OMPI_COMM_WORLD_RANK',0)
-    comm_size = os.getenv("OMPI_COMM_WORLD_SIZE",0)
+    comm_rank = int(os.getenv('OMPI_COMM_WORLD_RANK',0))
+    comm_size = int(os.getenv("OMPI_COMM_WORLD_SIZE",0))
   elif (args.comm_mode == "slurm-nccl"):
     comm_addr=os.getenv("SLURM_SRUN_COMM_HOST")
     comm_size = int(os.getenv("SLURM_NTASKS"))
@@ -223,7 +221,7 @@ if __name__ == '__main__':
   
     logging_utils.log_to_file(logger_name=None, log_filename=os.path.join(expDir, 'out.log'))
     params.log()
-    args.tboard_writer = SummaryWriter(log_dir=os.path.join(expDir, 'logs/'))
+    #args.tboard_writer = SummaryWriter(log_dir=os.path.join(expDir, 'logs/'))
 
   params.experiment_dir = os.path.abspath(expDir)
   params.checkpoint_path = os.path.join(params.experiment_dir, 'training_checkpoints/ckpt.tar')
@@ -231,8 +229,8 @@ if __name__ == '__main__':
     args.resuming=True
 
   train(params, args, comm_rank, comm_local_rank)
-  if comm_rank == 0:
-    args.tboard_writer.flush()
-    args.tboard_writer.close()
+  #if comm_rank == 0:
+  #  args.tboard_writer.flush()
+  #  args.tboard_writer.close()
   logging.info('DONE ---- rank %d'%comm_rank)
 

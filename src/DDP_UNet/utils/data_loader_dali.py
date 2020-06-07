@@ -62,9 +62,7 @@ class DaliPipeline(Pipeline):
                                            device_id,
                                            seed=12)
         dii = DaliInputIterator(params)
-        self.iterator = iter(dii)
-        self.input = ops.ExternalSource()
-        self.target = ops.ExternalSource()
+        self.source = ops.ExternalSource(source = dii, num_outputs = 2)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
         self.rng_angle = ops.Uniform(device = "cpu",
@@ -86,8 +84,7 @@ class DaliPipeline(Pipeline):
                                        perm=[3,0,1,2])
 
     def define_graph(self):
-        self.inp = self.input()
-        self.tar = self.target()
+        self.inp, self.tar = self.source()
         if self.do_rotate:
             #rotate 1
             angle1 = self.fcast(self.icast(self.rng_angle()) * 90)
@@ -108,11 +105,6 @@ class DaliPipeline(Pipeline):
             self.dinp = self.transpose(self.inp.gpu())
             self.dtar = self.transpose(self.tar.gpu())
         return self.dinp, self.dtar
-
-    def iter_setup(self):
-        inp, tar = self.iterator.next()
-        self.feed_input(self.inp, inp)
-        self.feed_input(self.tar, tar)
 
 
 class RandomCropDataLoader(object):
