@@ -17,8 +17,8 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-#import utils.data_loader_dali as dl
-import utils.data_loader_dali_lowmem as dl 
+import utils.data_loader_dali as dl
+#import utils.data_loader_dali_lowmem as dl 
 from nvidia.dali.plugin.pytorch import DALIGenericIterator
 from utils.plotting import generate_images, meanL1
 from networks import UNet
@@ -63,6 +63,9 @@ def train(params, args, world_rank, local_rank):
   if params.distributed:
     model = DDP(model, device_ids=[local_rank])
 
+  # loss
+  criterion = UNet.CosmoLoss(params.LAMBDA_2)
+    
   # amp stuff
   gscaler = amp.GradScaler()
     
@@ -92,39 +95,49 @@ def train(params, args, world_rank, local_rank):
 
     model.train()
     step_time = time.time()
-    for i, data in enumerate(train_data_loader, 0):
-      iters += 1
+    #for i, data in enumerate(train_data_loader, 0):
+    with torch.autograd.profiler.emit_nvtx():
+      for data in train_data_loader:
+        iters += 1
 
-      #adjust_LR(optimizer, params, iters)
-      inp = data[0]["inp"]
-      tar = data[0]["tar"]
-
-      if not args.io_only:
-        # fw pass
-        fw_time -= time.time()
-        optimizer.zero_grad()
-        with amp.autocast():
-          gen = model(inp)
-          loss = UNet.loss_func(gen, tar, params)
-        fw_time += time.time()
-
-        # bw pass
-        bw_time -= time.time()
-        gscaler.scale(loss).backward()
-        gscaler.step(optimizer)
-        gscaler.update()
-        bw_time += time.time()
+        #adjust_LR(optimizer, params, iters)
+        inp = data[0]["inp"]
+        tar = data[0]["tar"]
       
-      nsteps += 1
+        if not args.io_only:
+          # fw pass
+          fw_time -= time.time()
+          optimizer.zero_grad()
+          with amp.autocast(True):
+            gen = model(inp)
+            loss = criterion(gen, tar)
+          fw_time += time.time()
 
-    # epoch done
-    dist.barrier()
-    step_time = (time.time() - step_time) / float(nsteps)
-    fw_time /= float(nsteps)
-    bw_time /= float(nsteps)
-    io_time = max([step_time - fw_time - bw_time, 0])
-    iters_per_sec = 1. / step_time
-    
+          # bw pass
+          bw_time -= time.time()
+          #loss.backward()
+          #optimizer.step()
+          gscaler.scale(loss).backward()
+          gscaler.step(optimizer)
+          gscaler.update()
+          bw_time += time.time()
+      
+        nsteps += 1
+
+      # epoch done
+      dist.barrier()
+      step_time = (time.time() - step_time) / float(nsteps)
+      fw_time /= float(nsteps)
+      bw_time /= float(nsteps)
+      io_time = max([step_time - fw_time - bw_time, 0])
+      iters_per_sec = 1. / step_time
+
+      end = time.time()
+      if world_rank==0:
+        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
+        logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
+                     .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
+      
     ## Output training stats
     #model.eval()
     #if world_rank==0:
@@ -165,11 +178,11 @@ def train(params, args, world_rank, local_rank):
     #  torch.save({'iters': iters, 'epoch':epoch, 'model_state': model.state_dict(), 
     #              'optimizer_state_dict': optimizer.state_dict()}, params.checkpoint_path)
     
-    end = time.time()
-    if world_rank==0:
-        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
-                     .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
+    #end = time.time()
+    #if world_rank==0:
+    #    logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
+    #    logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
+    #                 .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
 
     # finalize
     dist.barrier()
@@ -189,7 +202,6 @@ if __name__ == '__main__':
   run_num = args.run_num
 
   params = YParams(os.path.abspath(args.yaml_config), args.config)
-  params.distributed = True
 
   # get env variables
   if (args.comm_mode == "openmpi-nccl"):
@@ -209,6 +221,8 @@ if __name__ == '__main__':
   os.environ["MASTER_ADDR"] = comm_addr
   os.environ["MASTER_PORT"] = comm_port
 
+  params.distributed = True if comm_size > 1 else False
+  
   # init process group
   dist.init_process_group(backend = "nccl",
                         rank = comm_rank,

@@ -22,12 +22,23 @@ def loss_func(gen_output, target, params):
     l1_loss = nn.functional.l1_loss(gen_output, target)
 
     # Transform T and rho back to original space, compute additional L1
-    orig_gen = inverse_transf(gen_output[:0,:,:,:])
-    orig_tar = inverse_transf(target[:,0,:,:,:])
+    orig_gen = inverse_transf(gen_output[:, 0, :, :, :])
+    orig_tar = inverse_transf(target[:, 0, :, :, :])
     orig_l1_loss = nn.functional.l1_loss(orig_gen, orig_tar)
     return l1_loss + params.LAMBDA_2*orig_l1_loss
 
 
+class CosmoLoss(nn.Module):
+    def __init__(self, LAMBDA = None):
+        super().__init__()
+        self.lambd = LAMBDA
+        self.l1 = nn.L1Loss()
+
+    def forward(self, prediction, target):
+        loss = self.l1(prediction, target)
+        if self.lambd is not None:
+            loss += self.lambd * self.l1(inverse_transf(prediction[:, 0, :, :, :]), inverse_transf(target[:, 0, :, :, :]))
+        return loss
 
 
 class UNet(nn.Module):
@@ -47,6 +58,7 @@ class UNet(nn.Module):
         self.conv_up3 = up_conv(256+256, 128)
         self.conv_up2 = up_conv(128+128, 64)
         self.conv_last = nn.ConvTranspose3d(64+64, params.N_out_channels, 4, stride=2, padding=1, output_padding=0)
+        self.tanh = nn.Tanh()
         
         
     def forward(self, x):
@@ -68,7 +80,7 @@ class UNet(nn.Module):
         x = self.conv_up2(x) # 64
         x = torch.cat([x, conv1], dim=1)
         x = self.conv_last(x) # 5
-        out = nn.Tanh()(x)
+        out = self.tanh(x)
         return out
 
     def get_weights_function(self, params):
