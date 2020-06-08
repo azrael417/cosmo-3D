@@ -22,7 +22,7 @@ def loss_func(gen_output, target, params):
     l1_loss = nn.functional.l1_loss(gen_output, target)
 
     # Transform T and rho back to original space, compute additional L1
-    orig_gen = inverse_transf(gen_output[:,0,:,:,:])
+    orig_gen = inverse_transf(gen_output[:0,:,:,:])
     orig_tar = inverse_transf(target[:,0,:,:,:])
     orig_l1_loss = nn.functional.l1_loss(orig_gen, orig_tar)
     return l1_loss + params.LAMBDA_2*orig_l1_loss

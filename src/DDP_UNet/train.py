@@ -8,8 +8,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 #from torch.utils.tensorboard import SummaryWriter
-from apex import amp, optimizers
-#from apex.parallel import DistributedDataParallel as DDP
+from apex import optimizers
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.cuda.amp as amp
@@ -18,9 +17,9 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-#from utils.data_loader import get_data_loader_distributed
-from utils.data_loader_dali_lowmem import get_data_loader_distributed
-#from utils.data_loader_dali import get_data_loader_distributed
+#from utils.data_loader_dali_lowmem import get_data_loader_distributed
+from utils.data_loader_dali import get_data_loader_distributed
+#from utils.data_loader_dali_dummy import get_data_loader_distributed
 from utils.plotting import generate_images, meanL1
 from networks import UNet
 
@@ -82,40 +81,44 @@ def train(params, args, world_rank, local_rank):
     
   for epoch in range(startEpoch, startEpoch+params.num_epochs):
     start = time.time()
-    step_time = 0.
-    tr_time = 0.
+    nsteps = 0
+    fw_time = 0.
+    bw_time = 0.
     log_time = 0.
 
     model.train()
     step_time = time.time()
-    nsteps = 0
     for i, data in enumerate(train_data_loader, 0):
       iters += 1
 
       #adjust_LR(optimizer, params, iters)
       inp, tar = data
-      tr_start = time.time()
-      #b_size = inp.size(0)
 
-      # fw pass
-      optimizer.zero_grad()
-      with amp.autocast():
-        gen = model(inp)
-        loss = UNet.loss_func(gen, tar, params)
+      if not args.io_only:
 
-      gscaler.scale(loss).backward()
-      gscaler.step(optimizer)
-      gscaler.update()
+        # fw pass
+        fw_time -= time.time()
+        optimizer.zero_grad()
+        with amp.autocast():
+          gen = model(inp)
+          loss = UNet.loss_func(gen, tar, params)
+        fw_time += time.time()
+
+        # bw pass
+        bw_time -= time.time()
+        gscaler.scale(loss).backward()
+        gscaler.step(optimizer)
+        gscaler.update()
+        bw_time += time.time()
       
-      tr_end = time.time()
-      tr_time += tr_end - tr_start
       nsteps += 1
-      #if world_rank == 0:
-      #  print("step {} took {}s".format(iters, tr_end - tr_start))
 
     # epoch done
     dist.barrier()
     step_time = (time.time() - step_time) / float(nsteps)
+    fw_time /= float(nsteps)
+    bw_time /= float(nsteps)
+    io_time = max([step_time - fw_time - bw_time, 0])
     iters_per_sec = 1. / step_time
     
     ## Output training stats
@@ -161,7 +164,8 @@ def train(params, args, world_rank, local_rank):
     end = time.time()
     if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        logging.info('total train time = {}, time per step = {}, iters/s = {}, logging time = {}'.format(tr_time, step_time, iters_per_sec, log_time))
+        logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
+                     .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
 
     # finalize
     dist.barrier()
@@ -175,6 +179,7 @@ if __name__ == '__main__':
   parser.add_argument("--yaml_config", default='./config/UNet.yaml', type=str)
   parser.add_argument("--config", default='default', type=str)
   parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
+  parser.add_argument("--io_only", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num

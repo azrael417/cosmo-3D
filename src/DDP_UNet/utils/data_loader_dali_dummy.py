@@ -22,15 +22,11 @@ def get_data_loader_distributed(params, world_rank, device_id=0):
 
 class DaliInputIterator(object):
     def __init__(self, params):
-        with h5py.File(params.data_path, 'r') as f:
-            self.Hydro = f['Hydro'][...]
-            self.Nbody = f['Nbody'][...]
-        self.length = self.Nbody.shape[1]
         self.size = params.data_size
         self.Nsamples = params.Nsamples
-        self.rng = np.random.RandomState(seed=12345)
         self.max_bytes = 5 * (self.size**3) * 4
         self.transposed = False if params.transposed_input==0 else True
+        self.rng = np.random.default_rng()
         print("Transposed Input" if self.transposed else "Original Input")
 
     def __iter__(self):
@@ -39,17 +35,13 @@ class DaliInputIterator(object):
         return self
 
     def __next__(self):
-        rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
-        x = rand[0]
-        y = rand[1]
-        z = rand[2]
         if self.transposed:
-            inp = np.expand_dims(np.copy(self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]), axis=0)
+            inp = self.rng.random((1, self.size, self.size, self.size, 4), dtype=np.float32)
+            tar = self.rng.random((1, self.size, self.size, self.size, 5), dtype=np.float32)
         else:
-            inp = np.expand_dims(np.copy(self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]), axis=0)
-        
+            inp = self.rng.random((1, 4, self.size, self.size, self.size), dtype=np.float32)
+            tar = self.rng.random((1, 5, self.size, self.size, self.size), dtype=np.float32)
+            
         return inp, tar
     
     next = __next__
@@ -62,7 +54,7 @@ class DaliPipeline(Pipeline):
                                            device_id,
                                            seed=12)
         dii = DaliInputIterator(params)
-        self.source = ops.ExternalSource(source = dii, num_outputs = 2, layout = ["DHWC", "DHWC"])
+        self.source = ops.ExternalSource(source = dii, num_outputs = 2)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
         self.rng_angle = ops.Uniform(device = "cpu",

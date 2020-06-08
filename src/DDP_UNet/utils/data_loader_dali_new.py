@@ -20,57 +20,41 @@ def get_data_loader_distributed(params, world_rank, device_id=0):
     return train_loader
 
 
-class DaliInputIterator(object):
-    def __init__(self, params):
-        with h5py.File(params.data_path, 'r') as f:
-            self.Hydro = f['Hydro'][...]
-            self.Nbody = f['Nbody'][...]
-        self.length = self.Nbody.shape[1]
-        self.size = params.data_size
-        self.Nsamples = params.Nsamples
-        self.rng = np.random.RandomState(seed=12345)
-        self.max_bytes = 5 * (self.size**3) * 4
-        self.transposed = False if params.transposed_input==0 else True
-        print("Transposed Input" if self.transposed else "Original Input")
-
-    def __iter__(self):
-        self.i = 0
-        self.n = self.Nsamples
-        return self
-
-    def __next__(self):
-        rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
-        x = rand[0]
-        y = rand[1]
-        z = rand[2]
-        if self.transposed:
-            inp = np.expand_dims(np.copy(self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]), axis=0)
-        else:
-            inp = np.expand_dims(np.copy(self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]), axis=0)
-        
-        return inp, tar
-    
-    next = __next__
-
-
 class DaliPipeline(Pipeline):
     def __init__(self, params, num_threads, device_id):
         super(DaliPipeline, self).__init__(params.batch_size,
                                            num_threads,
                                            device_id,
                                            seed=12)
-        dii = DaliInputIterator(params)
-        self.source = ops.ExternalSource(source = dii, num_outputs = 2, layout = ["DHWC", "DHWC"])
+
+        with h5py.File(params.data_path, 'r') as f:
+            Hydro = f['Hydro'][...]
+            Nbody = f['Nbody'][...]
+        self.Hydro = types.Constant(Hydro, shape=Hydro.shape, layout = "DHWC", device="cpu")
+        self.Nbody = types.Constant(Nbody, shape=Nbody.shape, layout = "DHWC", device="cpu")
+        
+        #self.ndummy = np.zeros((20, 20, 20, 4), dtype=np.float32)
+        #self.hdummy = np.zeros((20, 20, 20, 5), dtype=np.float32)
+        #self.Nbody = types.Constant(self.ndummy, shape = self.ndummy.shape, layout = "DHWC", device="cpu")
+        #self.Hydro = types.Constant(self.hdummy, shape = self.hdummy.shape, layout = "DHWC", device="cpu")
+
+        #self.Nbody = ops.Constant(fdata = self.ndummy.flatten().tolist(), shape = self.ndummy.shape, layout = "DHWC", device = "cpu")
+        #self.Hydro = ops.Constant(fdata = self.hdummy.flatten().tolist(), shape = self.hdummy.shape, layout = "DHWC", device = "cpu")
+        
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
         self.rng_angle = ops.Uniform(device = "cpu",
                                      range = [-1.5, 2.5])
+        self.rng_pos = ops.Uniform(device = "cpu",
+                                   range = [0., 1.])
         self.icast = ops.Cast(device = "cpu",
                               dtype = types.INT32)
         self.fcast = ops.Cast(device = "cpu",
                              dtype = types.FLOAT)
+        self.crop = ops.Crop(device = "cpu",
+                             crop_d = params.data_size,
+                             crop_h = params.data_size,
+                             crop_w = params.data_size)
         self.rotate1 = ops.Rotate(device = "gpu",
                                  axis = (1,0,0),
                                  interp_type = types.INTERP_LINEAR)
@@ -84,12 +68,22 @@ class DaliPipeline(Pipeline):
                                        perm=[3,0,1,2])
 
     def define_graph(self):
-        self.inp, self.tar = self.source()
+        pos_x = self.rng_pos()
+        pos_y = self.rng_pos()
+        pos_z = self.rng_pos()
+        inp = self.crop(self.Nbody,
+                        crop_pos_x = pos_x,
+                        crop_pos_y = pos_y,
+                        crop_pos_z = pos_z).gpu()
+        tar = self.crop(self.Hydro,
+                        crop_pos_x = pos_x,
+                        crop_pos_y = pos_y,
+                        crop_pos_z = pos_z).gpu()
         if self.do_rotate:
             #rotate 1
             angle1 = self.fcast(self.icast(self.rng_angle()) * 90)
-            dinp = self.rotate1(self.inp.gpu(), angle=angle1)
-            dtar = self.rotate1(self.tar.gpu(), angle=angle1)
+            dinp = self.rotate1(inp, angle=angle1)
+            dtar = self.rotate1(tar, angle=angle1)
             #rotate 2
             angle2 = self.fcast(self.icast(self.rng_angle()) * 90)
             dinp = self.rotate2(dinp, angle=angle2)
