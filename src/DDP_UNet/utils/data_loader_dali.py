@@ -36,7 +36,7 @@ class DaliInputIterator(object):
         self.transposed = False if params.transposed_input==0 else True
         print("Transposed Input" if self.transposed else "Original Input")
         # threadpool
-        self.executor = cf.ThreadPoolExecutor(max_workers = 1)
+        self.executor = cf.ThreadPoolExecutor(max_workers = 2)
         # prepared arrays for double buffering
         self.curr_buff = 0
         self.Nbody_buff = None
@@ -53,15 +53,14 @@ class DaliInputIterator(object):
                                np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]
 
         # submit data fetch
-        buff_id = self.curr_buff
-        self.future = self.executor.submit(self.get_rand_slice, buff_id)
-        
+        buff_ind = self.curr_buff
+        self.future = self.executor.submit(self.get_rand_slice, buff_ind)
 
     def __iter__(self):
         self.i = 0
         self.n = self.Nsamples
         return self
-
+    
     def get_rand_slice(self, buff_id):
         # RNG
         rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
@@ -85,10 +84,13 @@ class DaliInputIterator(object):
     
     def __next__(self):
         torch.cuda.nvtx.range_push("DaliInputIterator:next")
+        # wait for batch load to complete
         inp, tar = self.future.result()
+
+        # submit new work before proceeding
         self.curr_buff = (self.curr_buff + 1) % 2
-        buff_id = self.curr_buff
-        self.future = self.executor.submit(self.get_rand_slice, buff_id)
+        buff_ind = self.curr_buff
+        self.future = self.executor.submit(self.get_rand_slice, buff_ind)
         torch.cuda.nvtx.range_pop()
         
         return inp, tar

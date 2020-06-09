@@ -17,8 +17,8 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-import utils.data_loader_dali as dl
-#import utils.data_loader_dali_lowmem as dl 
+#import utils.data_loader_dali as dl
+import utils.data_loader_dali_lowmem as dl 
 from nvidia.dali.plugin.pytorch import DALIGenericIterator
 from utils.plotting import generate_images, meanL1
 from networks import UNet

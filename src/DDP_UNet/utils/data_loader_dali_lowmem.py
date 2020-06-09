@@ -4,6 +4,9 @@ from torch.utils.data import DataLoader, Dataset, DistributedSampler
 from torch import Tensor
 import h5py
 
+#concurrent futures
+import concurrent.futures as cf
+
 #dali stuff
 from nvidia.dali.pipeline import Pipeline
 import nvidia.dali.ops as ops            
@@ -31,37 +34,73 @@ class DaliInputIterator(object):
         self.rng = np.random.RandomState(seed=12345)
         self.max_bytes = 5 * (self.size**3) * 4
         self.transposed = False if params.transposed_input==0 else True
-        #preallocate numpy buffers
-        if self.transposed:
-            self.inp = np.zeros((1, self.size, self.size, self.size, 4), dtype=np.float32)
-            self.tar = np.zeros((1, self.size, self.size, self.size, 5), dtype=np.float32)
-        else:
-            self.inp = np.zeros((1, 4, self.size, self.size, self.size), dtype=np.float32)
-            self.tar = np.zeros((1, 5, self.size, self.size, self.size), dtype=np.float32)
         print("Transposed Input" if self.transposed else "Original Input")
+        # threadpool
+        self.executor = cf.ThreadPoolExecutor(max_workers = 2)
+        # prepared arrays for double buffering
+        self.curr_buff = 0
+        self.Nbody_buff = None
+        self.Hydro_buff = None
+        if self.transposed:
+            self.Nbody_buff = [np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype),
+                               np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype)]
+            self.Hydro_buff = [np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype),
+                               np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype)]
+	else:
+            self.Nbody_buff = [np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype),
+                               np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype)]
+            self.Hydro_buff = [np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype),
+                               np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]
+        
+        # submit data fetch
+        buff_ind = self.curr_buff
+        self.future = self.executor.submit(self.get_rand_slice, buff_ind)
 
     def __iter__(self):
         self.i = 0
         self.n = self.Nsamples
         return self
 
-    def __next__(self):
+    def get_rand_slice(self, buff_id):
+        # RNG
         rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
         x = rand[0]
         y = rand[1]
         z = rand[2]
+        
+        # Slice
         if self.transposed:
-            self.Nbody.read_direct(self.inp, np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:4],
+            self.Nbody.read_direct(self.Nbody_buff[buff_id],
+                                   np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:4],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:4])
-            self.Hydro.read_direct(self.tar, np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:5],
+            self.Hydro.read_direct(self.Hydro_buff[buff_id],
+                                   np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:5],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:5])
         else:
-            self.Nbody.read_direct(self.inp, np.s_[0:4, x:x+self.size, y:y+self.size, z:z+self.size],
+            self.Nbody.read_direct(self.Nbody_buff[buff_id], np.s_[0:4, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:4, 0:self.size, 0:self.size, 0:self.size])
-            self.Hydro.read_direct(self.tar, np.s_[0:5, x:x+self.size, y:y+self.size, z:z+self.size],
+            self.Hydro.read_direct(self.Hydro_buff[buff_id], np.s_[0:5, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:5, 0:self.size, 0:self.size, 0:self.size])
+
+        # Return handles
+        inp = self.Nbody_buff[buff_id]
+        tar = self.Hydro_buff[buff_id]
         
-        return self.inp, self.tar
+        return inp, tar
+
+    
+    def __next__(self):
+        torch.cuda.nvtx.range_push("DaliInputIterator:next")
+        # wait for batch load to complete
+        inp, tar = self.future.result()
+
+        # submit new work before proceeding
+        self.curr_buff = (self.curr_buff + 1) % 2
+        buff_ind = self.curr_buff
+        self.future = self.executor.submit(self.get_rand_slice, buff_ind)
+        torch.cuda.nvtx.range_pop()
+        
+        return inp, tar
     
     next = __next__
 
