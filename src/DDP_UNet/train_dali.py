@@ -67,7 +67,8 @@ def train(params, args, world_rank, local_rank):
   criterion = UNet.CosmoLoss(params.LAMBDA_2)
     
   # amp stuff
-  gscaler = amp.GradScaler()
+  if args.enable_amp:
+    gscaler = amp.GradScaler()
     
   iters = 0
   startEpoch = 0
@@ -105,22 +106,28 @@ def train(params, args, world_rank, local_rank):
         tar = data[0]["tar"]
       
         if not args.io_only:
+          torch.cuda.nvtx.range_push("cosmo3D:forward")
           # fw pass
-          fw_time -= time.time()
+          fw_time -= time.time()   
           optimizer.zero_grad()
-          with amp.autocast(True):
+          with amp.autocast(args.enable_amp):
             gen = model(inp)
             loss = criterion(gen, tar)
           fw_time += time.time()
+          torch.cuda.nvtx.range_pop()
 
           # bw pass
+          torch.cuda.nvtx.range_push("cosmo3D:backward")
           bw_time -= time.time()
-          #loss.backward()
-          #optimizer.step()
-          gscaler.scale(loss).backward()
-          gscaler.step(optimizer)
-          gscaler.update()
+          if args.enable_amp:
+            gscaler.scale(loss).backward()
+            gscaler.step(optimizer)
+            gscaler.update()
+          else:
+            loss.backward()
+            optimizer.step()
           bw_time += time.time()
+          torch.cuda.nvtx.range_pop()
       
         nsteps += 1
 
@@ -197,6 +204,7 @@ if __name__ == '__main__':
   parser.add_argument("--config", default='default', type=str)
   parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   parser.add_argument("--io_only", action="store_true")
+  parser.add_argument("--enable_amp", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num
