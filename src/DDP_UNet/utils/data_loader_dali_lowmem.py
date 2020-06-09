@@ -46,7 +46,7 @@ class DaliInputIterator(object):
                                np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype)]
             self.Hydro_buff = [np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype),
                                np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype)]
-	else:
+        else:
             self.Nbody_buff = [np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype),
                                np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype)]
             self.Hydro_buff = [np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype),
@@ -77,9 +77,11 @@ class DaliInputIterator(object):
                                    np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:5],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:5])
         else:
-            self.Nbody.read_direct(self.Nbody_buff[buff_id], np.s_[0:4, x:x+self.size, y:y+self.size, z:z+self.size],
+            self.Nbody.read_direct(self.Nbody_buff[buff_id],
+                                   np.s_[0:4, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:4, 0:self.size, 0:self.size, 0:self.size])
-            self.Hydro.read_direct(self.Hydro_buff[buff_id], np.s_[0:5, x:x+self.size, y:y+self.size, z:z+self.size],
+            self.Hydro.read_direct(self.Hydro_buff[buff_id],
+                                   np.s_[0:5, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:5, 0:self.size, 0:self.size, 0:self.size])
 
         # Return handles
