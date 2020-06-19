@@ -237,6 +237,9 @@ if __name__ == '__main__':
                         rank = comm_rank,
                         world_size = comm_size)
 
+  # set device here to avoid unnecessary surprises
+  torch.cuda.set_device(comm_local_rank)
+
   #torch.backends.cudnn.benchmark = True
   args.resuming = False
 

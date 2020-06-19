@@ -16,4 +16,5 @@ mpioptions="--allow-run-as-root --map-by ppr:8:socket:PE=3"
 mpirun -np ${totalranks} ${mpioptions} \
      ${profilecmd} $(which python) train_orig.py \
      --yaml_config "config/UNet.yaml" \
-     --comm_mode "openmpi-nccl"
+     --comm_mode "openmpi-nccl" \
+     --enable_amp

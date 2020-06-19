@@ -15,7 +15,7 @@ default: &DEFAULT
   data_size: 256
   N_out_channels: 5
   batch_size: 1
-  cpu_pipeline: 1
+  cpu_pipeline: 0
 
 multi8: 
   <<: *DEFAULT

@@ -44,6 +44,7 @@ class RandomCropDataset(Dataset):
         return self.Nsamples
 
     def __getitem__(self, idx):
+        torch.cuda.nvtx.range_push("RandomCropDataset:next")
         x = np.random.randint(low=0, high=self.length-self.size)
         y = np.random.randint(low=0, high=self.length-self.size)
         z = np.random.randint(low=0, high=self.length-self.size)
@@ -61,7 +62,8 @@ class RandomCropDataset(Dataset):
             rand = np.random.randint(low=1, high=25)
             inp = self.rotate(inp, rand)
             tar = self.rotate(tar, rand)
-            
+        torch.cuda.nvtx.range_pop()
+
         return torch.as_tensor(np.copy(inp)), torch.as_tensor(np.copy(tar))
 
 

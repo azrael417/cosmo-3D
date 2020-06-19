@@ -5,6 +5,7 @@
 
 #inference runs
 nvidia-docker run \
+	      --security-opt seccomp=unconfined \
 	      --net host \
 	      --ipc host \
               --device /dev/nvidia-fs0  \

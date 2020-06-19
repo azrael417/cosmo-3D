@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 #number of ranks
-totalranks=1
+totalranks=16
 
 #hdf file locking 
 export HDF5_USE_FILE_LOCKING=FALSE
@@ -11,6 +11,7 @@ mpioptions="--allow-run-as-root --map-by ppr:8:socket:PE=3"
 
 # profile
 #profilecmd="nsys profile --stats=true --mpi-impl=openmpi --trace=cuda,cublas,nvtx,osrt,mpi -f true -o /data/profiles/dali_pipe/profile_dali_amp_threads_nranks${totalranks}_%q{OMPI_COMM_WORLD_RANK}"
+profilecmd=
 
 #srun
 mpirun -np ${totalranks} ${mpioptions} \

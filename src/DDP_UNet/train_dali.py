@@ -61,7 +61,7 @@ def train(params, args, world_rank, local_rank):
   optimizer = optimizers.FusedAdam(model.parameters(), lr = params.lr)
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
-    model = DDP(model, device_ids=[local_rank])
+    model = DDP(model, device_ids=[device.index])
 
   # loss
   criterion = UNet.CosmoLoss(params.LAMBDA_2)
@@ -236,6 +236,9 @@ if __name__ == '__main__':
   dist.init_process_group(backend = "nccl",
                         rank = comm_rank,
                         world_size = comm_size)
+
+  # set device here to avoid unnecessary surprises
+  torch.cuda.set_device(comm_local_rank)
 
   #torch.backends.cudnn.benchmark = True
   args.resuming = False
