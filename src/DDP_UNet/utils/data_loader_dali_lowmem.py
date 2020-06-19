@@ -117,31 +117,39 @@ class DaliPipeline(Pipeline):
         self.source = ops.ExternalSource(source = dii, num_outputs = 2)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
+        self.use_cpu = params.cpu_pipeline
+        print("Use CPU Pipeline" if self.use_cpu else "Use GPU Pipeline")
         self.rng_angle = ops.Uniform(device = "cpu",
                                      range = [-1.5, 2.5])
         self.icast = ops.Cast(device = "cpu",
                               dtype = types.INT32)
         self.fcast = ops.Cast(device = "cpu",
                              dtype = types.FLOAT)
-        self.rotate1 = ops.Rotate(device = "gpu",
+        dev = "cpu" if self.use_cpu else "gpu"
+        self.rotate1 = ops.Rotate(device = dev,
                                  axis = (1,0,0),
                                  interp_type = types.INTERP_LINEAR)
-        self.rotate2 = ops.Rotate(device = "gpu",
+        self.rotate2 = ops.Rotate(device = dev,
                                  axis = (0,1,0),
 		                 interp_type = types.INTERP_LINEAR)
-        self.rotate3 = ops.Rotate(device = "gpu",
+        self.rotate3 = ops.Rotate(device = dev,
                                  axis = (0,0,1),
 		                 interp_type = types.INTERP_LINEAR)
-        self.transpose = ops.Transpose(device = "gpu",
+        self.transpose = ops.Transpose(device = dev,
                                        perm=[3,0,1,2])
 
     def define_graph(self):
         self.inp, self.tar = self.source()
+
+        if not self.use_cpu:
+            self.inp = self.inp.gpu()
+            self.tar = self.tar.gpu()
+        
         if self.do_rotate:
             #rotate 1
             angle1 = self.fcast(self.icast(self.rng_angle()) * 90)
-            dinp = self.rotate1(self.inp.gpu(), angle=angle1)
-            dtar = self.rotate1(self.tar.gpu(), angle=angle1)
+            dinp = self.rotate1(self.inp, angle=angle1)
+            dtar = self.rotate1(self.tar, angle=angle1)
             #rotate 2
             angle2 = self.fcast(self.icast(self.rng_angle()) * 90)
             dinp = self.rotate2(dinp, angle=angle2)
@@ -154,8 +162,13 @@ class DaliPipeline(Pipeline):
             self.dinp = self.transpose(dinp)
             self.dtar = self.transpose(dtar)
         else:
-            self.dinp = self.transpose(self.inp.gpu())
-            self.dtar = self.transpose(self.tar.gpu())
+            self.dinp = self.transpose(self.inp)
+            self.dtar = self.transpose(self.tar)
+
+        if self.use_cpu:
+            self.dinp = self.dinp.gpu()
+            self.dtar = self.dtar.gpu()
+            
         return self.dinp, self.dtar
 
 

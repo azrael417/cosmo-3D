@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil as shu
 import time
 import numpy as np
 import argparse
@@ -17,8 +18,7 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-import utils.data_loader_dali as dl
-#import utils.data_loader_dali_lowmem as dl 
+import utils.data_loader_dali_lowmem as dl 
 from nvidia.dali.plugin.pytorch import DALIGenericIterator
 from utils.plotting import generate_images, meanL1
 from networks import UNet
@@ -108,7 +108,7 @@ def train(params, args, world_rank, local_rank):
         if not args.io_only:
           torch.cuda.nvtx.range_push("cosmo3D:forward")
           # fw pass
-          fw_time -= time.time()
+          fw_time -= time.time()   
           optimizer.zero_grad()
           with amp.autocast(args.enable_amp):
             gen = model(inp)
@@ -201,11 +201,11 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument("--run_num", default='00', type=str)
   parser.add_argument("--yaml_config", default='./config/UNet.yaml', type=str)
+  parser.add_argument("--stage_target", default='lustre', type=str)
   parser.add_argument("--config", default='default', type=str)
   parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   parser.add_argument("--io_only", action="store_true")
   parser.add_argument("--enable_amp", action="store_true")
-  parser.add_argument("--cpu_pipeline", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num
@@ -242,6 +242,42 @@ if __name__ == '__main__':
 
   # set number of gpu
   params.ngpu = comm_size
+
+  if args.stage_target == "dram":
+    # copy the input file into local DRAM for each socket:
+    tmpfs_root = '/dev/shm'
+    #tmpfs_root = '/tmp'
+    #tmpfs_root = '/run/cosmo_data'
+    gpus_per_socket = torch.cuda.device_count() // 2
+    socket = 0 if comm_local_rank < gpus_per_socket else 1
+    new_data_path = os.path.join(tmpfs_root, 'numa{}'.format(socket), os.path.basename(params.data_path))
+    if comm_local_rank % (torch.cuda.device_count() / 2) == 0:
+        if not os.path.isdir(os.path.dirname(new_data_path)):
+            os.makedirs(os.path.dirname(new_data_path))
+        if not os.path.isfile(new_data_path):
+            shu.copyfile(params.data_path, new_data_path)
+
+    # we need to wait till the stuff is copied
+    dist.barrier()
+
+    # change parameter path to new file
+    params.data_path = new_data_path
+
+  elif args.stage_target == "nvme":
+    # copy the input file into local NVME
+    tmpfs_root = '/tmp'
+    new_data_path = os.path.join(tmpfs_root, os.path.basename(params.data_path))
+    if comm_local_rank == 0:
+        if not os.path.isdir(os.path.dirname(new_data_path)):
+            os.makedirs(os.path.dirname(new_data_path))
+        if not os.path.isfile(new_data_path):
+            shu.copyfile(params.data_path, new_data_path)
+
+    # we need to wait till the stuff is copied
+    dist.barrier()
+
+    # change parameter path to new file
+    params.data_path = new_data_path
   
   # Set up directory
   baseDir = './expts/'
