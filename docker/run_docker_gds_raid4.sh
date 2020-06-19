@@ -1,5 +1,7 @@
 #!/bin/bash
 
+tag="new_scaler"
+
 #some parameters
 #data_root=/home/cuda/tkurth/cam5_data
 
@@ -30,4 +32,4 @@ nvidia-docker run \
 	      --volume "/raid5/data/tkurth:/data5:rw" \
 	      --volume "/raid7/data/tkurth:/data7:rw" \
 	      --volume "/mnt/weka/tkurth/cosmo_data:/data:rw" \
-	      --workdir "/opt/DDP_UNet" -it registry.services.nersc.gov/tkurth/pytorch-cosmo:latest /bin/bash
+	      --workdir "/opt/DDP_UNet" -it registry.services.nersc.gov/tkurth/pytorch-cosmo:${tag} /bin/bash

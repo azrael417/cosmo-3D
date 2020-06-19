@@ -28,10 +28,15 @@ class DaliPipeline(Pipeline):
                                            seed=12)
 
         with h5py.File(params.data_path, 'r') as f:
+            # load hydro and clean up
             Hydro = f['Hydro'][...]
+            self.Hydro = types.Constant(Hydro, shape=Hydro.shape, layout = "DHWC", device="cpu")
+            del Hydro
+
+            # load nbody and clean up 
             Nbody = f['Nbody'][...]
-        self.Hydro = types.Constant(Hydro, shape=Hydro.shape, layout = "DHWC", device="cpu")
-        self.Nbody = types.Constant(Nbody, shape=Nbody.shape, layout = "DHWC", device="cpu")
+            self.Nbody = types.Constant(Nbody, shape=Nbody.shape, layout = "DHWC", device="cpu")
+            del Nbody
         
         #self.ndummy = np.zeros((20, 20, 20, 4), dtype=np.float32)
         #self.hdummy = np.zeros((20, 20, 20, 5), dtype=np.float32)
@@ -96,8 +101,8 @@ class DaliPipeline(Pipeline):
             self.dinp = self.transpose(dinp)
             self.dtar = self.transpose(dtar)
         else:
-            self.dinp = self.transpose(self.inp.gpu())
-            self.dtar = self.transpose(self.tar.gpu())
+            self.dinp = self.transpose(self.inp)
+            self.dtar = self.transpose(self.tar)
         return self.dinp, self.dtar
 
 

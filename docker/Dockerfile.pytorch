@@ -2,6 +2,7 @@ FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.deps
 
 SHELL ["/bin/bash", "-c"]
 
+ARG TAG
 ARG PYVER
 ARG PYV
 
@@ -22,12 +23,13 @@ ENV PYBIN=${PYTHONPATH}/bin \
 #pytorch prereqs
 RUN pip install ninja pyyaml mkl mkl-include setuptools cffi numpy
 
-##clone source
+#clone source
 COPY src/pytorch /opt/pytorch
 
 WORKDIR /opt/pytorch
 
-RUN CMAKE_INCLUDE_PATH=${PYINC} \
+RUN git checkout benchmark_${TAG} && \
+    CMAKE_INCLUDE_PATH=${PYINC} \
     CMAKE_LIBRARY_PATH=${PYLIB} \
     NCCL_INCLUDE_DIR=/usr/include \
     NCCL_LIB_DIR=/usr/lib/x86_64-linux-gnu \

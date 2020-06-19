@@ -1,4 +1,5 @@
-FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.pytorch
+ARG TAG
+FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.pytorch:${TAG}
 
 SHELL ["/bin/bash", "-c"]
 

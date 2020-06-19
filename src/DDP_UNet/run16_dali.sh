@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 #number of ranks
-totalranks=16
+totalranks=1
 
 #hdf file locking 
 export HDF5_USE_FILE_LOCKING=FALSE

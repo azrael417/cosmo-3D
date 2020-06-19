@@ -18,4 +18,4 @@ mpirun -np ${totalranks} ${mpioptions} \
      ${profilecmd} $(which python) train_dali_smooth.py \
      --yaml_config "config/UNet_transpose.yaml" \
      --comm_mode "openmpi-nccl" \
-     --enable_amp --io_only
+     --enable_amp
