@@ -5,7 +5,6 @@ SHELL ["/bin/bash", "-c"]
 ARG PYVER
 ARG PYV
 
-
 ENV PYTHONPATH=/opt/python/cp${PYV}-cp${PYV}m
 ENV PYBIN=${PYTHONPATH}/bin \
     PYINC=${PYTHONPATH}/include \

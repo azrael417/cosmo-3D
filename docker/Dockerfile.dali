@@ -54,7 +54,7 @@ RUN mkdir -p build && cd build &&  \
     make -j 16 && make install
 
 #install DALI
-RUN cd /opt/dali/build && pip install --force-reinstall dali/python --user
+RUN cd /opt/dali/build && pip install --force-reinstall dali/python
 
 #delete the fudge libcuda.so.1 and restore library paths
 RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
