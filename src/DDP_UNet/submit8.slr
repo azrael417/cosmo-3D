@@ -20,5 +20,6 @@ mkdir -p /dev/shm/numa0 /dev/shm/numa1
 
 #srun
 srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
-     shifter python train.py \
-     --yaml_config "config/UNet_transpose.yaml"
+     shifter /opt/python/cp37-cp37m/bin/python train_dali.py \
+     --yaml_config "config/UNet_transpose.yaml" \
+     --enable_amp
