@@ -1,0 +1,84 @@
+2020-06-22 23:04:43,704 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 23:04:45,537 - root - INFO - ------------------ Configuration ------------------
+2020-06-22 23:04:45,538 - root - INFO - Configuration file: /opt/DDP_UNet/config/UNet.yaml
+2020-06-22 23:04:45,538 - root - INFO - Configuration name: default
+2020-06-22 23:04:45,542 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-06-22 23:04:45,542 - root - INFO - lr 0.0001
+2020-06-22 23:04:45,542 - root - INFO - data_path /data/DDP_trdat.h5
+2020-06-22 23:04:45,542 - root - INFO - transposed_input 0
+2020-06-22 23:04:45,542 - root - INFO - rotate_input 1
+2020-06-22 23:04:45,542 - root - INFO - ngpu 1
+2020-06-22 23:04:45,542 - root - INFO - Nsamples 20
+2020-06-22 23:04:45,542 - root - INFO - num_epochs 5
+2020-06-22 23:04:45,542 - root - INFO - num_data_workers 2
+2020-06-22 23:04:45,542 - root - INFO - LAMBDA_2 0.01
+2020-06-22 23:04:45,542 - root - INFO - data_size 256
+2020-06-22 23:04:45,542 - root - INFO - N_out_channels 5
+2020-06-22 23:04:45,543 - root - INFO - batch_size 1
+2020-06-22 23:04:45,543 - root - INFO - ---------------------------------------------------
+2020-06-22 23:04:45,543 - root - INFO - rank 0, begin data loader init (local rank 0)
+Original Input
+Enable Rotation
+2020-06-22 23:05:18,564 - root - INFO - rank 0, data loader initialized
+2020-06-22 23:05:21,343 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+    (tanh): Tanh()
+  )
+)
+2020-06-22 23:05:21,344 - root - INFO - Starting Training Loop...
+2020-06-22 23:05:48,620 - root - INFO - Time taken for epoch 1 is 27.275779247283936 sec
+2020-06-22 23:05:48,620 - root - INFO - total time / step = 1.3637834072113038, fw time / step = 0.10482755899429322, bw time / step = 1.1389314174652099, exposed io time / step = 0.12002443075180058, iters/s = 0.7332542650924485, logging time = 0.0
+2020-06-22 23:06:13,439 - root - INFO - Time taken for epoch 2 is 24.81884241104126 sec
+2020-06-22 23:06:13,439 - root - INFO - total time / step = 1.2409337043762207, fw time / step = 0.0050537109375, bw time / step = 1.118859088420868, exposed io time / step = 0.11702090501785278, iters/s = 0.8058448219058321, logging time = 0.0
+2020-06-22 23:06:38,851 - root - INFO - Time taken for epoch 3 is 25.411511421203613 sec
+2020-06-22 23:06:38,851 - root - INFO - total time / step = 1.270565664768219, fw time / step = 0.004762911796569824, bw time / step = 1.119991374015808, exposed io time / step = 0.1458113789558413, iters/s = 0.7870510180852585, logging time = 0.0
+2020-06-22 23:07:03,517 - root - INFO - Time taken for epoch 4 is 24.665177583694458 sec
+2020-06-22 23:07:03,517 - root - INFO - total time / step = 1.2332448720932008, fw time / step = 0.004893958568572998, bw time / step = 1.1228750705718995, exposed io time / step = 0.10547584295272827, iters/s = 0.8108689706551858, logging time = 0.0
+2020-06-22 23:07:28,371 - root - INFO - Time taken for epoch 5 is 24.853277683258057 sec
+2020-06-22 23:07:28,371 - root - INFO - total time / step = 1.2426541924476624, fw time / step = 0.00826646089553833, bw time / step = 1.1231345653533935, exposed io time / step = 0.1112531661987306, iters/s = 0.8047291081280584, logging time = 0.0
+2020-06-22 23:07:28,453 - root - INFO - DONE ---- rank 0

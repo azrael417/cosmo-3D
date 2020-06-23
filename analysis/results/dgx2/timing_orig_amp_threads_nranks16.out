@@ -1,0 +1,174 @@
+2020-06-22 21:10:42,652 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,676 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,691 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,753 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,777 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,853 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,877 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,954 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:42,978 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,055 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,079 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,156 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,179 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,257 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,280 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:43,357 - matplotlib.font_manager - INFO - generated new fontManager
+2020-06-22 21:10:52,421 - root - INFO - rank 8, begin data loader init (local rank 8)
+2020-06-22 21:10:52,422 - root - INFO - rank 7, begin data loader init (local rank 7)
+2020-06-22 21:10:52,422 - root - INFO - rank 11, begin data loader init (local rank 11)
+2020-06-22 21:10:52,422 - root - INFO - rank 15, begin data loader init (local rank 15)
+2020-06-22 21:10:52,422 - root - INFO - rank 3, begin data loader init (local rank 3)
+2020-06-22 21:10:53,733 - root - INFO - rank 14, begin data loader init (local rank 14)
+2020-06-22 21:10:53,734 - root - INFO - rank 9, begin data loader init (local rank 9)
+2020-06-22 21:10:53,741 - root - INFO - rank 1, begin data loader init (local rank 1)
+2020-06-22 21:10:53,743 - root - INFO - rank 4, begin data loader init (local rank 4)
+2020-06-22 21:10:53,744 - root - INFO - rank 10, begin data loader init (local rank 10)
+2020-06-22 21:10:53,745 - root - INFO - rank 6, begin data loader init (local rank 6)
+2020-06-22 21:10:53,745 - root - INFO - rank 13, begin data loader init (local rank 13)
+2020-06-22 21:10:53,746 - root - INFO - rank 5, begin data loader init (local rank 5)
+2020-06-22 21:10:53,746 - root - INFO - rank 2, begin data loader init (local rank 2)
+2020-06-22 21:10:53,746 - root - INFO - rank 12, begin data loader init (local rank 12)
+2020-06-22 21:10:53,747 - root - INFO - ------------------ Configuration ------------------
+2020-06-22 21:10:53,747 - root - INFO - Configuration file: /opt/DDP_UNet/config/UNet.yaml
+2020-06-22 21:10:53,747 - root - INFO - Configuration name: default
+2020-06-22 21:10:53,752 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-06-22 21:10:53,752 - root - INFO - lr 0.0001
+2020-06-22 21:10:53,753 - root - INFO - data_path /data/DDP_trdat.h5
+2020-06-22 21:10:53,753 - root - INFO - transposed_input 0
+2020-06-22 21:10:53,753 - root - INFO - rotate_input 1
+2020-06-22 21:10:53,753 - root - INFO - ngpu 1
+2020-06-22 21:10:53,753 - root - INFO - Nsamples 20
+2020-06-22 21:10:53,753 - root - INFO - num_epochs 5
+2020-06-22 21:10:53,753 - root - INFO - num_data_workers 2
+2020-06-22 21:10:53,753 - root - INFO - LAMBDA_2 0.01
+2020-06-22 21:10:53,753 - root - INFO - data_size 256
+2020-06-22 21:10:53,753 - root - INFO - N_out_channels 5
+2020-06-22 21:10:53,753 - root - INFO - batch_size 1
+2020-06-22 21:10:53,753 - root - INFO - ---------------------------------------------------
+2020-06-22 21:10:53,753 - root - INFO - rank 0, begin data loader init (local rank 0)
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,372 - root - INFO - rank 5, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,394 - root - INFO - rank 11, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,470 - root - INFO - rank 3, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,474 - root - INFO - rank 7, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,482 - root - INFO - rank 15, data loader initialized
+Original Input
+Enable Rotation
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,537 - root - INFO - rank 1, data loader initialized
+2020-06-22 21:11:26,537 - root - INFO - rank 13, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,594 - root - INFO - rank 4, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,609 - root - INFO - rank 14, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,613 - root - INFO - rank 12, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,616 - root - INFO - rank 2, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,620 - root - INFO - rank 8, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,621 - root - INFO - rank 10, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,626 - root - INFO - rank 9, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,630 - root - INFO - rank 6, data loader initialized
+Original Input
+Enable Rotation
+2020-06-22 21:11:26,667 - root - INFO - rank 0, data loader initialized
+2020-06-22 21:11:42,729 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+    (tanh): Tanh()
+  )
+)
+2020-06-22 21:11:42,730 - root - INFO - Starting Training Loop...
+2020-06-22 21:12:18,488 - root - INFO - Time taken for epoch 1 is 35.758583784103394 sec
+2020-06-22 21:12:18,489 - root - INFO - total time / step = 1.7879238605499268, fw time / step = 0.1751041293144226, bw time / step = 1.1938406705856324, exposed io time / step = 0.4189790606498718, iters/s = 0.5593079336680599, logging time = 0.0
+2020-06-22 21:12:51,908 - root - INFO - Time taken for epoch 2 is 33.418882846832275 sec
+2020-06-22 21:12:51,908 - root - INFO - total time / step = 1.6709347367286682, fw time / step = 0.0059731841087341305, bw time / step = 1.3320463061332704, exposed io time / step = 0.3329152464866638, iters/s = 0.598467419474315, logging time = 0.0
+2020-06-22 21:13:24,512 - root - INFO - Time taken for epoch 3 is 32.60389018058777 sec
+2020-06-22 21:13:24,513 - root - INFO - total time / step = 1.63018456697464, fw time / step = 0.0056019783020019535, bw time / step = 1.2310688614845275, exposed io time / step = 0.3935137271881104, iters/s = 0.6134274733417695, logging time = 0.0
+2020-06-22 21:13:56,615 - root - INFO - Time taken for epoch 4 is 32.102530002593994 sec
+2020-06-22 21:13:56,616 - root - INFO - total time / step = 1.6051126837730407, fw time / step = 0.005874752998352051, bw time / step = 1.210835576057434, exposed io time / step = 0.3884023547172546, iters/s = 0.6230092192962807, logging time = 0.0
+2020-06-22 21:14:29,830 - root - INFO - Time taken for epoch 5 is 33.21424102783203 sec
+2020-06-22 21:14:29,831 - root - INFO - total time / step = 1.6607020616531372, fw time / step = 0.006053459644317627, bw time / step = 1.3883519291877746, exposed io time / step = 0.26629667282104497, iters/s = 0.6021549699315453, logging time = 0.0
+2020-06-22 21:14:30,162 - root - INFO - DONE ---- rank 4
+2020-06-22 21:14:30,166 - root - INFO - DONE ---- rank 1
+2020-06-22 21:14:30,167 - root - INFO - DONE ---- rank 2
+2020-06-22 21:14:30,168 - root - INFO - DONE ---- rank 6
+2020-06-22 21:14:30,168 - root - INFO - DONE ---- rank 3
+2020-06-22 21:14:30,168 - root - INFO - DONE ---- rank 7
+2020-06-22 21:14:30,169 - root - INFO - DONE ---- rank 0
+2020-06-22 21:14:30,169 - root - INFO - DONE ---- rank 11
+2020-06-22 21:14:30,169 - root - INFO - DONE ---- rank 9
+2020-06-22 21:14:30,170 - root - INFO - DONE ---- rank 5
+2020-06-22 21:14:30,171 - root - INFO - DONE ---- rank 12
+2020-06-22 21:14:30,171 - root - INFO - DONE ---- rank 8
+2020-06-22 21:14:30,171 - root - INFO - DONE ---- rank 15
+2020-06-22 21:14:30,172 - root - INFO - DONE ---- rank 10
+2020-06-22 21:14:30,174 - root - INFO - DONE ---- rank 13
+2020-06-22 21:14:30,174 - root - INFO - DONE ---- rank 14

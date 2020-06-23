@@ -1,0 +1,111 @@
+2020-06-23 00:31:19,782 - root - INFO - rank 2, begin data loader init (local rank 2)
+2020-06-23 00:31:19,783 - root - INFO - rank 1, begin data loader init (local rank 1)
+2020-06-23 00:31:19,783 - root - INFO - rank 3, begin data loader init (local rank 3)
+2020-06-23 00:31:19,787 - root - INFO - ------------------ Configuration ------------------
+2020-06-23 00:31:19,787 - root - INFO - Configuration file: /opt/DDP_UNet/config/UNet_transpose.yaml
+2020-06-23 00:31:19,787 - root - INFO - Configuration name: default
+2020-06-23 00:31:19,829 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-06-23 00:31:19,829 - root - INFO - lr 0.0001
+2020-06-23 00:31:19,829 - root - INFO - data_path /data/DDP_trdat_tra.h5
+2020-06-23 00:31:19,829 - root - INFO - transposed_input 1
+2020-06-23 00:31:19,829 - root - INFO - rotate_input 1
+2020-06-23 00:31:19,829 - root - INFO - ngpu 1
+2020-06-23 00:31:19,829 - root - INFO - Nsamples 20
+2020-06-23 00:31:19,829 - root - INFO - num_epochs 5
+2020-06-23 00:31:19,829 - root - INFO - num_data_workers 2
+2020-06-23 00:31:19,829 - root - INFO - LAMBDA_2 0.01
+2020-06-23 00:31:19,829 - root - INFO - data_size 256
+2020-06-23 00:31:19,829 - root - INFO - N_out_channels 5
+2020-06-23 00:31:19,829 - root - INFO - batch_size 1
+2020-06-23 00:31:19,829 - root - INFO - cpu_pipeline 0
+2020-06-23 00:31:19,829 - root - INFO - ---------------------------------------------------
+2020-06-23 00:31:19,829 - root - INFO - rank 0, begin data loader init (local rank 0)
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Enable Rotation
+Enable Rotation
+Use GPU Pipeline
+Use GPU Pipeline
+Enable Rotation
+Enable Rotation
+Use GPU Pipeline
+Use GPU Pipeline
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:31:43,569 - root - INFO - rank 0, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:31:43,713 - root - INFO - rank 2, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:31:43,835 - root - INFO - rank 1, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:31:43,937 - root - INFO - rank 3, data loader initialized
+2020-06-23 00:31:45,925 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+    (tanh): Tanh()
+  )
+)
+2020-06-23 00:31:45,926 - root - INFO - Starting Training Loop...
+2020-06-23 00:32:13,474 - root - INFO - Time taken for epoch 1 is 27.547781467437744 sec
+2020-06-23 00:32:13,474 - root - INFO - total time / step = 1.377383530139923, fw time / step = 0.08024084568023682, bw time / step = 1.1618731498718262, exposed io time / step = 0.13526953458786006, iters/s = 0.7260141987456564, logging time = 0.0
+2020-06-23 00:32:40,171 - root - INFO - Time taken for epoch 2 is 26.69680881500244 sec
+2020-06-23 00:32:40,171 - root - INFO - total time / step = 1.3348323583602906, fw time / step = 0.004930365085601807, bw time / step = 1.1898586750030518, exposed io time / step = 0.14004331827163696, iters/s = 0.7491577453429441, logging time = 0.0
+2020-06-23 00:33:07,152 - root - INFO - Time taken for epoch 3 is 26.980778455734253 sec
+2020-06-23 00:33:07,152 - root - INFO - total time / step = 1.3490308284759522, fw time / step = 0.006629478931427002, bw time / step = 1.2044388413429261, exposed io time / step = 0.13796250820159917, iters/s = 0.7412729041409197, logging time = 0.0
+2020-06-23 00:33:34,140 - root - INFO - Time taken for epoch 4 is 26.98757028579712 sec
+2020-06-23 00:33:34,140 - root - INFO - total time / step = 1.349370551109314, fw time / step = 0.005634772777557373, bw time / step = 1.2060221195220948, exposed io time / step = 0.1377136588096617, iters/s = 0.7410862784710268, logging time = 0.0
+2020-06-23 00:34:01,067 - root - INFO - Time taken for epoch 5 is 26.92664408683777 sec
+2020-06-23 00:34:01,068 - root - INFO - total time / step = 1.3463242530822754, fw time / step = 0.004656898975372315, bw time / step = 1.2002026438713074, exposed io time / step = 0.1414647102355957, iters/s = 0.7427631179566138, logging time = 0.0
+2020-06-23 00:34:01,513 - root - INFO - DONE ---- rank 0
+2020-06-23 00:34:01,526 - root - INFO - DONE ---- rank 2
+2020-06-23 00:34:01,536 - root - INFO - DONE ---- rank 1
+2020-06-23 00:34:01,540 - root - INFO - DONE ---- rank 3
