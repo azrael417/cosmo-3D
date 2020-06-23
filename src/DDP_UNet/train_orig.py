@@ -81,7 +81,8 @@ def train(params, args, world_rank, local_rank):
     logging.info(model)
     logging.info("Starting Training Loop...")
 
-    
+
+  #for i, data in enumerate(train_data_loader, 0):                                                                                                      
   for epoch in range(startEpoch, startEpoch+params.num_epochs):
     start = time.time()
     nsteps = 0
@@ -91,35 +92,36 @@ def train(params, args, world_rank, local_rank):
 
     model.train()
     step_time = time.time()
-    nsteps = 0
-    for i, data in enumerate(train_data_loader, 0):
-      iters += 1
 
-      #adjust_LR(optimizer, params, iters)
-      inp, tar = map(lambda x: x.to(device), data)
+    with torch.autograd.profiler.emit_nvtx():
+      for i, data in enumerate(train_data_loader, 0):
+        iters += 1
 
-      if not args.io_only:
+        #adjust_LR(optimizer, params, iters)
+        inp, tar = map(lambda x: x.to(device), data)
 
-        # fw pass
-        fw_time -= time.time()
-        optimizer.zero_grad()
-        with amp.autocast(args.enable_amp):
-          gen = model(inp)
-          loss = criterion(gen, tar)
-        fw_time += time.time()
+        if not args.io_only:
 
-        # bw pass
-        bw_time -= time.time()
-        if args.enable_amp:
-          gscaler.scale(loss).backward()
-          gscaler.step(optimizer)
-          gscaler.update()
-        else:
-          loss.backward()
-          optimizer.step()
-        bw_time += time.time()
+          # fw pass
+          fw_time -= time.time()
+          optimizer.zero_grad()
+          with amp.autocast(args.enable_amp):
+            gen = model(inp)
+            loss = criterion(gen, tar)
+          fw_time += time.time()
+
+          # bw pass
+          bw_time -= time.time()
+          if args.enable_amp:
+            gscaler.scale(loss).backward()
+            gscaler.step(optimizer)
+            gscaler.update()
+          else:
+            loss.backward()
+            optimizer.step()
+          bw_time += time.time()
       
-      nsteps += 1
+        nsteps += 1
 
     # epoch done
     dist.barrier()

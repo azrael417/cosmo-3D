@@ -1,6 +1,6 @@
 #!/bin/bash
 
-tag="new_scaler"
+tag="old_scaler"
 
 #some parameters
 #data_root=/home/cuda/tkurth/cam5_data
