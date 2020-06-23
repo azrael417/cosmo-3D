@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #some parameters
-tag="old_scaler"
+tag="new_scaler"
 
 cd ..
 
