@@ -244,6 +244,9 @@ if __name__ == '__main__':
   #torch.backends.cudnn.benchmark = True
   args.resuming = False
 
+  # ES stuff
+  params.no_copy = args.no_copy
+  
   # set number of gpu
   params.ngpu = comm_size
   

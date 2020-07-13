@@ -106,7 +106,8 @@ class DaliPipeline(Pipeline):
                                            seed=12)
         dii = DaliInputIterator(params)
         self.no_copy = params.no_copy
-        print("Use Zero Copy ES" if self.no_copy)
+        if self.no_copy:
+            print("Use Zero Copy ES")
         self.source = ops.ExternalSource(source = dii, num_outputs = 2, layout = ["DHWC", "DHWC"], no_copy = self.no_copy)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
