@@ -2,6 +2,9 @@ ARG TAG
 
 FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.dali:${TAG}
 
+#install cupy
+RUN pip install cupy-cuda102
+
 #install mpi4py
 RUN pip install mpi4py
 
