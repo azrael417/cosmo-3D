@@ -1,0 +1,143 @@
+2020-06-23 00:34:09,729 - root - INFO - rank 4, begin data loader init (local rank 4)
+2020-06-23 00:34:09,730 - root - INFO - rank 5, begin data loader init (local rank 5)
+2020-06-23 00:34:09,730 - root - INFO - rank 6, begin data loader init (local rank 6)
+2020-06-23 00:34:10,645 - root - INFO - rank 3, begin data loader init (local rank 3)
+2020-06-23 00:34:10,819 - root - INFO - rank 7, begin data loader init (local rank 7)
+2020-06-23 00:34:10,819 - root - INFO - rank 2, begin data loader init (local rank 2)
+2020-06-23 00:34:10,820 - root - INFO - rank 1, begin data loader init (local rank 1)
+2020-06-23 00:34:10,822 - root - INFO - ------------------ Configuration ------------------
+2020-06-23 00:34:10,822 - root - INFO - Configuration file: /opt/DDP_UNet/config/UNet_transpose.yaml
+2020-06-23 00:34:10,822 - root - INFO - Configuration name: default
+2020-06-23 00:34:10,827 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-06-23 00:34:10,827 - root - INFO - lr 0.0001
+2020-06-23 00:34:10,827 - root - INFO - data_path /data/DDP_trdat_tra.h5
+2020-06-23 00:34:10,827 - root - INFO - transposed_input 1
+2020-06-23 00:34:10,827 - root - INFO - rotate_input 1
+2020-06-23 00:34:10,827 - root - INFO - ngpu 1
+2020-06-23 00:34:10,827 - root - INFO - Nsamples 20
+2020-06-23 00:34:10,827 - root - INFO - num_epochs 5
+2020-06-23 00:34:10,827 - root - INFO - num_data_workers 2
+2020-06-23 00:34:10,827 - root - INFO - LAMBDA_2 0.01
+2020-06-23 00:34:10,827 - root - INFO - data_size 256
+2020-06-23 00:34:10,827 - root - INFO - N_out_channels 5
+2020-06-23 00:34:10,827 - root - INFO - batch_size 1
+2020-06-23 00:34:10,827 - root - INFO - cpu_pipeline 0
+2020-06-23 00:34:10,827 - root - INFO - ---------------------------------------------------
+2020-06-23 00:34:10,827 - root - INFO - rank 0, begin data loader init (local rank 0)
+Transposed Input
+Enable Rotation
+Use GPU Pipeline
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Enable Rotation
+Use GPU Pipeline
+Enable Rotation
+Use GPU Pipeline
+Enable Rotation
+Use GPU Pipeline
+Enable Rotation
+Use GPU Pipeline
+Enable Rotation
+Use GPU Pipeline
+Enable Rotation
+Use GPU Pipeline
+Enable Rotation
+Use GPU Pipeline
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:38,828 - root - INFO - rank 0, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:38,940 - root - INFO - rank 4, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:38,967 - root - INFO - rank 3, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:39,035 - root - INFO - rank 6, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:39,327 - root - INFO - rank 5, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:39,336 - root - INFO - rank 1, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:39,350 - root - INFO - rank 2, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-06-23 00:34:39,362 - root - INFO - rank 7, data loader initialized
+2020-06-23 00:34:42,924 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+    (tanh): Tanh()
+  )
+)
+2020-06-23 00:34:42,925 - root - INFO - Starting Training Loop...
+2020-06-23 00:35:12,650 - root - INFO - Time taken for epoch 1 is 29.725358247756958 sec
+2020-06-23 00:35:12,650 - root - INFO - total time / step = 1.4862627983093262, fw time / step = 0.11637760400772094, bw time / step = 1.1950045704841614, exposed io time / step = 0.17488062381744385, iters/s = 0.6728285207283218, logging time = 0.0
+2020-06-23 00:35:40,277 - root - INFO - Time taken for epoch 2 is 27.626864433288574 sec
+2020-06-23 00:35:40,278 - root - INFO - total time / step = 1.3813347339630127, fw time / step = 0.008225965499877929, bw time / step = 1.1899244666099549, exposed io time / step = 0.1831843018531798, iters/s = 0.7239374898877888, logging time = 0.0
+2020-06-23 00:36:07,980 - root - INFO - Time taken for epoch 3 is 27.701792001724243 sec
+2020-06-23 00:36:07,980 - root - INFO - total time / step = 1.3850813269615174, fw time / step = 0.008837318420410157, bw time / step = 1.1933159828186035, exposed io time / step = 0.18292802572250366, iters/s = 0.7219792661516283, logging time = 0.0
+2020-06-23 00:36:36,690 - root - INFO - Time taken for epoch 4 is 28.709623098373413 sec
+2020-06-23 00:36:36,690 - root - INFO - total time / step = 1.435472798347473, fw time / step = 0.007163047790527344, bw time / step = 1.2494654059410095, exposed io time / step = 0.17884434461593623, iters/s = 0.6966345869815209, logging time = 0.0
+2020-06-23 00:37:04,955 - root - INFO - Time taken for epoch 5 is 28.26471757888794 sec
+2020-06-23 00:37:04,955 - root - INFO - total time / step = 1.4132277250289917, fw time / step = 0.00902930498123169, bw time / step = 1.2158890962600708, exposed io time / step = 0.18830932378768916, iters/s = 0.7076000437080906, logging time = 0.0
+2020-06-23 00:37:05,726 - root - INFO - DONE ---- rank 7
+2020-06-23 00:37:05,731 - root - INFO - DONE ---- rank 3
+2020-06-23 00:37:05,743 - root - INFO - DONE ---- rank 1
+2020-06-23 00:37:05,767 - root - INFO - DONE ---- rank 2
+2020-06-23 00:37:05,780 - root - INFO - DONE ---- rank 4
+2020-06-23 00:37:05,792 - root - INFO - DONE ---- rank 5
+2020-06-23 00:37:05,801 - root - INFO - DONE ---- rank 6
+2020-06-23 00:37:05,820 - root - INFO - DONE ---- rank 0
