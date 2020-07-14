@@ -1,0 +1,207 @@
+2020-07-14 17:45:40,729 - root - INFO - rank 3, begin data loader init (local rank 3)
+2020-07-14 17:45:40,730 - root - INFO - rank 5, begin data loader init (local rank 5)
+2020-07-14 17:45:40,731 - root - INFO - rank 11, begin data loader init (local rank 11)
+2020-07-14 17:45:40,731 - root - INFO - rank 15, begin data loader init (local rank 15)
+2020-07-14 17:45:40,731 - root - INFO - rank 9, begin data loader init (local rank 9)
+2020-07-14 17:45:40,731 - root - INFO - rank 12, begin data loader init (local rank 12)
+2020-07-14 17:45:40,732 - root - INFO - rank 13, begin data loader init (local rank 13)
+2020-07-14 17:45:40,732 - root - INFO - rank 14, begin data loader init (local rank 14)
+2020-07-14 17:45:41,645 - root - INFO - rank 10, begin data loader init (local rank 10)
+2020-07-14 17:45:41,661 - root - INFO - rank 8, begin data loader init (local rank 8)
+2020-07-14 17:45:41,662 - root - INFO - rank 7, begin data loader init (local rank 7)
+2020-07-14 17:45:41,664 - root - INFO - rank 4, begin data loader init (local rank 4)
+2020-07-14 17:45:41,664 - root - INFO - rank 2, begin data loader init (local rank 2)
+2020-07-14 17:45:41,665 - root - INFO - rank 1, begin data loader init (local rank 1)
+2020-07-14 17:45:41,665 - root - INFO - rank 6, begin data loader init (local rank 6)
+2020-07-14 17:45:41,665 - root - INFO - ------------------ Configuration ------------------
+2020-07-14 17:45:41,665 - root - INFO - Configuration file: /opt/DDP_UNet/config/UNet_transpose.yaml
+2020-07-14 17:45:41,666 - root - INFO - Configuration name: default
+2020-07-14 17:45:41,670 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-07-14 17:45:41,670 - root - INFO - lr 0.0001
+2020-07-14 17:45:41,670 - root - INFO - data_path /data/DDP_trdat_tra.h5
+2020-07-14 17:45:41,670 - root - INFO - transposed_input 1
+2020-07-14 17:45:41,670 - root - INFO - rotate_input 1
+2020-07-14 17:45:41,671 - root - INFO - ngpu 1
+2020-07-14 17:45:41,671 - root - INFO - Nsamples 20
+2020-07-14 17:45:41,671 - root - INFO - num_epochs 5
+2020-07-14 17:45:41,671 - root - INFO - num_data_workers 2
+2020-07-14 17:45:41,671 - root - INFO - LAMBDA_2 0.01
+2020-07-14 17:45:41,671 - root - INFO - data_size 256
+2020-07-14 17:45:41,671 - root - INFO - N_out_channels 5
+2020-07-14 17:45:41,671 - root - INFO - batch_size 1
+2020-07-14 17:45:41,671 - root - INFO - cpu_pipeline 0
+2020-07-14 17:45:41,671 - root - INFO - ---------------------------------------------------
+2020-07-14 17:45:41,671 - root - INFO - rank 0, begin data loader init (local rank 0)
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Transposed Input
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Use Zero Copy ES
+Enable Rotation
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Use Zero Copy ES
+Enable Rotation
+Enable Rotation
+Use Zero Copy ES
+Use Zero Copy ES
+Enable Rotation
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:24,975 - root - INFO - rank 9, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:25,067 - root - INFO - rank 0, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,355 - root - INFO - rank 8, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,533 - root - INFO - rank 3, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,589 - root - INFO - rank 11, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,617 - root - INFO - rank 1, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,638 - root - INFO - rank 13, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,805 - root - INFO - rank 6, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,876 - root - INFO - rank 15, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:29,915 - root - INFO - rank 10, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:30,050 - root - INFO - rank 5, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:30,117 - root - INFO - rank 2, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:30,153 - root - INFO - rank 7, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:30,157 - root - INFO - rank 12, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:30,160 - root - INFO - rank 14, data loader initialized
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+2020-07-14 17:46:30,162 - root - INFO - rank 4, data loader initialized
+2020-07-14 17:46:38,517 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+    (tanh): Tanh()
+  )
+)
+2020-07-14 17:46:38,517 - root - INFO - Starting Training Loop...
+2020-07-14 17:47:06,808 - root - INFO - Time taken for epoch 1 is 28.290412187576294 sec
+2020-07-14 17:47:06,808 - root - INFO - total time / step = 1.4145153164863586, fw time / step = 0.18144738674163818, bw time / step = 1.1441179633140564, exposed io time / step = 0.0889499664306641, iters/s = 0.7069559363160447, logging time = 0.0
+2020-07-14 17:47:32,188 - root - INFO - Time taken for epoch 2 is 25.379306077957153 sec
+2020-07-14 17:47:32,188 - root - INFO - total time / step = 1.2689568281173706, fw time / step = 0.006454205513000489, bw time / step = 1.168772530555725, exposed io time / step = 0.09373009204864502, iters/s = 0.7880488743526476, logging time = 0.0
+2020-07-14 17:47:57,603 - root - INFO - Time taken for epoch 3 is 25.4143967628479 sec
+2020-07-14 17:47:57,603 - root - INFO - total time / step = 1.2707111239433289, fw time / step = 0.007098090648651123, bw time / step = 1.1687210321426391, exposed io time / step = 0.09489200115203866, iters/s = 0.7869609238146545, logging time = 0.0
+2020-07-14 17:48:23,094 - root - INFO - Time taken for epoch 4 is 25.490954637527466 sec
+2020-07-14 17:48:23,095 - root - INFO - total time / step = 1.2745397567749024, fw time / step = 0.006393373012542725, bw time / step = 1.172924768924713, exposed io time / step = 0.09522161483764657, iters/s = 0.7845969454341712, logging time = 0.0
+2020-07-14 17:48:48,493 - root - INFO - Time taken for epoch 5 is 25.39811682701111 sec
+2020-07-14 17:48:48,493 - root - INFO - total time / step = 1.269897472858429, fw time / step = 0.006753981113433838, bw time / step = 1.1689915776252746, exposed io time / step = 0.09415191411972046, iters/s = 0.7874651468902343, logging time = 0.0
+2020-07-14 17:48:48,895 - root - INFO - DONE ---- rank 15
+2020-07-14 17:48:48,896 - root - INFO - DONE ---- rank 0
+2020-07-14 17:48:48,896 - root - INFO - DONE ---- rank 4
+2020-07-14 17:48:48,897 - root - INFO - DONE ---- rank 6
+2020-07-14 17:48:48,898 - root - INFO - DONE ---- rank 3
+2020-07-14 17:48:48,898 - root - INFO - DONE ---- rank 10
+2020-07-14 17:48:48,899 - root - INFO - DONE ---- rank 12
+2020-07-14 17:48:48,899 - root - INFO - DONE ---- rank 2
+2020-07-14 17:48:48,900 - root - INFO - DONE ---- rank 9
+2020-07-14 17:48:48,901 - root - INFO - DONE ---- rank 5
+2020-07-14 17:48:48,901 - root - INFO - DONE ---- rank 7
+2020-07-14 17:48:48,902 - root - INFO - DONE ---- rank 1
+2020-07-14 17:48:48,903 - root - INFO - DONE ---- rank 8
+2020-07-14 17:48:48,903 - root - INFO - DONE ---- rank 11
+2020-07-14 17:48:48,904 - root - INFO - DONE ---- rank 13
+2020-07-14 17:48:48,904 - root - INFO - DONE ---- rank 14
