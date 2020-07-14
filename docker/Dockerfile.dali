@@ -1,0 +1,70 @@
+ARG TAG
+FROM registry.services.nersc.gov/tkurth/pytorch-cosmo.pytorch:${TAG}
+
+SHELL ["/bin/bash", "-c"]
+
+ARG PYVER
+ARG PYV
+
+#install nsight
+RUN apt install -y cuda-nsight-compute-10-2 cuda-nsight-systems-10-2
+
+ENV PYTHONPATH=/opt/python/cp${PYV}-cp${PYV}m
+ENV PYBIN=${PYTHONPATH}/bin \
+    PYLIB=${PYTHONPATH}/lib
+
+#we need to do that so that it compiles
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
+    ldconfig
+
+ENV OLD_LD_LIBRARY_PATH=${LD_LIBRARY_PATH} \
+    OLD_LIBRARY_PATH=${LIBRARY_PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/opt/dali/build:${PYLIB}:${LD_LIBRARY_PATH} \
+    LIBRARY_PATH=/usr/local/cuda/lib64/stubs:/opt/dali/build:${PYLIB}:${LIBRARY_PATH}
+
+##clone source
+COPY src/DALI/ /opt/dali
+
+WORKDIR /opt/dali
+
+#build and install
+RUN mkdir -p build && cd build &&  \
+    cmake ../ \
+    -DCMAKE_INSTALL_PREFIX=. \
+    -DARCH=x86_64 \
+    -DCUDA_TARGET_ARCHS= \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DBUILD_TEST=ON \
+    -DBUILD_BENCHMARK=ON \
+    -DBUILD_NVTX=ON \
+    -DBUILD_PYTHON=ON \
+    -DBUILD_LMDB=ON \
+    -DBUILD_JPEG_TURBO=ON \
+    -DBUILD_NVJPEG=ON \
+    -DBUILD_LIBTIFF=ON \
+    -DBUILD_NVOF=ON \
+    -DBUILD_NVDEC=ON \
+    -DBUILD_LIBSND=ON \
+    -DBUILD_NVML=ON \
+    -DBUILD_FFTS=ON \
+    -DVERBOSE_LOGS=OFF \
+    -DWERROR=ON \
+    -DBUILD_WITH_ASAN=OFF \
+    -DDALI_BUILD_FLAVOR= \
+    -DGIT_SHA=$(git rev-parse HEAD) && \
+    make -j 16 && make install
+
+#install DALI
+RUN cd /opt/dali/build && pip install --force-reinstall dali/python
+
+#delete the fudge libcuda.so.1 and restore library paths
+RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
+ENV LD_LIBRARY_PATH=/opt/dali/build:${PYLIB}:${OLD_LD_LIBRARY_PATH} \
+    LIBRARY_PATH=/opt/dali/build:${PYLIB}:${OLD_LIBRARY_PATH}
+RUN ldconfig
+
+#install other python packages
+RUN pip install tqdm
+
+# debug
+#COPY sys/gds-alpha-sys/lib/*.so /usr/lib/x86_64-linux-gnu/

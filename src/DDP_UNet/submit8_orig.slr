@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --nodes=1
-#SBATCH --time=00:50:00
+#SBATCH --time=02:00:00
 #SBATCH -C gpu
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
@@ -12,16 +12,14 @@
 rankspernode=8
 totalranks=$(( ${rankspernode} * ${SLURM_NNODES} ))
 
-#run parameters
-outputfile="dali_ngpu${totalranks}.out"
-
-#set HDF5 variables
+#hdf file locking 
 export HDF5_USE_FILE_LOCKING=FALSE
 
 #set up /dev/shm
 mkdir -p /dev/shm/numa0 /dev/shm/numa1
 
-srun -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
-     shifter \
-     python data_bench_dali_lowmem.py |& tee ${outputfile} 
-
+#srun
+srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
+     shifter /opt/python/cp37-cp37m/bin/python train_orig.py \
+     --yaml_config "config/UNet.yaml" \
+     --enable_amp

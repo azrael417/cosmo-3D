@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil as shu
 import time
 import numpy as np
 import argparse
@@ -17,9 +18,8 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-#from utils.data_loader_dali_lowmem import get_data_loader_distributed
-from utils.data_loader_dali import get_data_loader_distributed
-#from utils.data_loader_dali_dummy import get_data_loader_distributed
+import utils.data_loader_dali_lowmem as dl 
+from nvidia.dali.plugin.pytorch import DALIGenericIterator
 from utils.plotting import generate_images, meanL1
 from networks import UNet
 
@@ -42,12 +42,16 @@ def train(params, args, world_rank, local_rank):
   
   #logging info
   logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, local_rank))
-  #train_data_loader = get_data_loader_distributed(params, world_rank)
-  train_data_loader = get_data_loader_distributed(params, world_rank, local_rank)
-  logging.info('rank %d, data loader initialized'%world_rank)
 
   # set device
   device = torch.device("cuda:{}".format(local_rank))
+
+  # data loader
+  pipe = dl.DaliPipeline(params, num_threads=params.num_data_workers, device_id=device.index)
+  pipe.build()
+  train_data_loader = DALIGenericIterator([pipe], ['inp', 'tar'], params.Nsamples, auto_reset = True)
+  logging.info('rank %d, data loader initialized'%world_rank)
+
   
   model = UNet.UNet(params)
   model.to(device)
@@ -59,8 +63,12 @@ def train(params, args, world_rank, local_rank):
   if params.distributed:
     model = DDP(model, device_ids=[local_rank])
 
+  # loss
+  criterion = UNet.CosmoLoss(params.LAMBDA_2)
+    
   # amp stuff
-  gscaler = amp.GradScaler()
+  if args.enable_amp:
+    gscaler = amp.GradScaler()
     
   iters = 0
   startEpoch = 0
@@ -88,39 +96,55 @@ def train(params, args, world_rank, local_rank):
 
     model.train()
     step_time = time.time()
-    for i, data in enumerate(train_data_loader, 0):
-      iters += 1
+    #for i, data in enumerate(train_data_loader, 0):
+    with torch.autograd.profiler.emit_nvtx():
+      for data in train_data_loader:
+        iters += 1
 
-      #adjust_LR(optimizer, params, iters)
-      inp, tar = data
-
-      if not args.io_only:
-
-        # fw pass
-        fw_time -= time.time()
-        optimizer.zero_grad()
-        with amp.autocast():
-          gen = model(inp)
-          loss = UNet.loss_func(gen, tar, params)
-        fw_time += time.time()
-
-        # bw pass
-        bw_time -= time.time()
-        gscaler.scale(loss).backward()
-        gscaler.step(optimizer)
-        gscaler.update()
-        bw_time += time.time()
+        #adjust_LR(optimizer, params, iters)
+        inp = data[0]["inp"]
+        tar = data[0]["tar"]
       
-      nsteps += 1
+        if not args.io_only:
+          torch.cuda.nvtx.range_push("cosmo3D:forward")
+          # fw pass
+          fw_time -= time.time()   
+          optimizer.zero_grad()
+          with amp.autocast(args.enable_amp):
+            gen = model(inp)
+            loss = criterion(gen, tar)
+          fw_time += time.time()
+          torch.cuda.nvtx.range_pop()
 
-    # epoch done
-    dist.barrier()
-    step_time = (time.time() - step_time) / float(nsteps)
-    fw_time /= float(nsteps)
-    bw_time /= float(nsteps)
-    io_time = max([step_time - fw_time - bw_time, 0])
-    iters_per_sec = 1. / step_time
-    
+          # bw pass
+          torch.cuda.nvtx.range_push("cosmo3D:backward")
+          bw_time -= time.time()
+          if args.enable_amp:
+            gscaler.scale(loss).backward()
+            gscaler.step(optimizer)
+            gscaler.update()
+          else:
+            loss.backward()
+            optimizer.step()
+          bw_time += time.time()
+          torch.cuda.nvtx.range_pop()
+      
+        nsteps += 1
+
+      # epoch done
+      dist.barrier()
+      step_time = (time.time() - step_time) / float(nsteps)
+      fw_time /= float(nsteps)
+      bw_time /= float(nsteps)
+      io_time = max([step_time - fw_time - bw_time, 0])
+      iters_per_sec = 1. / step_time
+
+      end = time.time()
+      if world_rank==0:
+        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
+        logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
+                     .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
+      
     ## Output training stats
     #model.eval()
     #if world_rank==0:
@@ -161,11 +185,11 @@ def train(params, args, world_rank, local_rank):
     #  torch.save({'iters': iters, 'epoch':epoch, 'model_state': model.state_dict(), 
     #              'optimizer_state_dict': optimizer.state_dict()}, params.checkpoint_path)
     
-    end = time.time()
-    if world_rank==0:
-        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
-                     .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
+    #end = time.time()
+    #if world_rank==0:
+    #    logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
+    #    logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
+    #                 .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
 
     # finalize
     dist.barrier()
@@ -177,15 +201,17 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument("--run_num", default='00', type=str)
   parser.add_argument("--yaml_config", default='./config/UNet.yaml', type=str)
+  parser.add_argument("--stage_target", default='lustre', type=str)
   parser.add_argument("--config", default='default', type=str)
   parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   parser.add_argument("--io_only", action="store_true")
+  parser.add_argument("--enable_amp", action="store_true")
+  parser.add_argument("--no_copy", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num
 
   params = YParams(os.path.abspath(args.yaml_config), args.config)
-  params.distributed = True
 
   # get env variables
   if (args.comm_mode == "openmpi-nccl"):
@@ -205,16 +231,60 @@ if __name__ == '__main__':
   os.environ["MASTER_ADDR"] = comm_addr
   os.environ["MASTER_PORT"] = comm_port
 
+  params.distributed = True if comm_size > 1 else False
+  
   # init process group
   dist.init_process_group(backend = "nccl",
                         rank = comm_rank,
                         world_size = comm_size)
 
+  # set device here to avoid unnecessary surprises
+  torch.cuda.set_device(comm_local_rank)
+
   #torch.backends.cudnn.benchmark = True
   args.resuming = False
 
+  # ES stuff
+  params.no_copy = args.no_copy
+  
   # set number of gpu
   params.ngpu = comm_size
+
+  if args.stage_target == "dram":
+    # copy the input file into local DRAM for each socket:
+    tmpfs_root = '/dev/shm'
+    #tmpfs_root = '/tmp'
+    #tmpfs_root = '/run/cosmo_data'
+    gpus_per_socket = torch.cuda.device_count() // 2
+    socket = 0 if comm_local_rank < gpus_per_socket else 1
+    new_data_path = os.path.join(tmpfs_root, 'numa{}'.format(socket), os.path.basename(params.data_path))
+    if comm_local_rank % (torch.cuda.device_count() / 2) == 0:
+        if not os.path.isdir(os.path.dirname(new_data_path)):
+            os.makedirs(os.path.dirname(new_data_path))
+        if not os.path.isfile(new_data_path):
+            shu.copyfile(params.data_path, new_data_path)
+
+    # we need to wait till the stuff is copied
+    dist.barrier()
+
+    # change parameter path to new file
+    params.data_path = new_data_path
+
+  elif args.stage_target == "nvme":
+    # copy the input file into local NVME
+    tmpfs_root = '/tmp'
+    new_data_path = os.path.join(tmpfs_root, os.path.basename(params.data_path))
+    if comm_local_rank == 0:
+        if not os.path.isdir(os.path.dirname(new_data_path)):
+            os.makedirs(os.path.dirname(new_data_path))
+        if not os.path.isfile(new_data_path):
+            shu.copyfile(params.data_path, new_data_path)
+
+    # we need to wait till the stuff is copied
+    dist.barrier()
+
+    # change parameter path to new file
+    params.data_path = new_data_path
   
   # Set up directory
   baseDir = './expts/'

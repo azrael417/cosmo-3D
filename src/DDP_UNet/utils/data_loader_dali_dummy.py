@@ -4,67 +4,117 @@ from torch.utils.data import DataLoader, Dataset, DistributedSampler
 from torch import Tensor
 import h5py
 
+#dali stuff
+from nvidia.dali.pipeline import Pipeline
+import nvidia.dali.ops as ops            
+import nvidia.dali.types as types
+from nvidia.dali.plugin.pytorch import DALIGenericIterator
+
 
 def worker_init(wrk_id):
     np.random.seed(torch.utils.data.get_worker_info().seed%(2**32 - 1))
 
 
-def get_data_loader_distributed(params, world_rank, local_rank):
-    fname = params.data_path
-    with h5py.File(fname, 'r') as f:
-        Nbody = f['Nbody'][:,:,:,:].astype(np.float32)
-        Hydro = f['Hydro'][:,:,:,:].astype(np.float32)
-
-    dataset = RandomCropDataset(params, Nbody, Hydro)
-
-    train_loader = DataLoader(dataset,
-                              batch_size=params.batch_size,
-                              num_workers=params.num_data_workers,
-                              worker_init_fn=worker_init,
-                              pin_memory=torch.cuda.is_available())
+def get_data_loader_distributed(params, world_rank, device_id=0):
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
     return train_loader
 
 
-
-class RandomCropDataset(Dataset):
-    """Random crops"""
-    def __init__(self, params, Nbody, Hydro):
-        self.Hydro = Hydro
-        self.Nbody = Nbody
-        self.length = Nbody.shape[1]
+class DaliInputIterator(object):
+    def __init__(self, params):
         self.size = params.data_size
-        self.Nsamples = 20
+        self.Nsamples = params.Nsamples
+        self.max_bytes = 5 * (self.size**3) * 4
         self.transposed = False if params.transposed_input==0 else True
+        self.rng = np.random.default_rng()
         print("Transposed Input" if self.transposed else "Original Input")
+
+    def __iter__(self):
+        self.i = 0
+        self.n = self.Nsamples
+        return self
+
+    def __next__(self):
+        if self.transposed:
+            inp = self.rng.random((1, self.size, self.size, self.size, 4), dtype=np.float32)
+            tar = self.rng.random((1, self.size, self.size, self.size, 5), dtype=np.float32)
+        else:
+            inp = self.rng.random((1, 4, self.size, self.size, self.size), dtype=np.float32)
+            tar = self.rng.random((1, 5, self.size, self.size, self.size), dtype=np.float32)
+            
+        return inp, tar
+    
+    next = __next__
+
+
+class DaliPipeline(Pipeline):
+    def __init__(self, params, num_threads, device_id):
+        super(DaliPipeline, self).__init__(params.batch_size,
+                                           num_threads,
+                                           device_id,
+                                           seed=12)
+        dii = DaliInputIterator(params)
+        self.source = ops.ExternalSource(source = dii, num_outputs = 2)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
-        self.rotate = RandomRotator()
+        self.rng_angle = ops.Uniform(device = "cpu",
+                                     range = [-1.5, 2.5])
+        self.icast = ops.Cast(device = "cpu",
+                              dtype = types.INT32)
+        self.fcast = ops.Cast(device = "cpu",
+                             dtype = types.FLOAT)
+        self.rotate1 = ops.Rotate(device = "gpu",
+                                 axis = (1,0,0),
+                                 interp_type = types.INTERP_LINEAR)
+        self.rotate2 = ops.Rotate(device = "gpu",
+                                 axis = (0,1,0),
+		                 interp_type = types.INTERP_LINEAR)
+        self.rotate3 = ops.Rotate(device = "gpu",
+                                 axis = (0,0,1),
+		                 interp_type = types.INTERP_LINEAR)
+        self.transpose = ops.Transpose(device = "gpu",
+                                       perm=[3,0,1,2])
 
-    def __len__(self):
-        return self.Nsamples
-
-    def __getitem__(self, idx):
-        torch.cuda.nvtx.range_push("RandomCropDataset:next")
-        x = np.random.randint(low=0, high=self.length-self.size)
-        y = np.random.randint(low=0, high=self.length-self.size)
-        z = np.random.randint(low=0, high=self.length-self.size)
-
-        if self.transposed:
-            inp = self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]
-            tar = self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]
-            inp = np.transpose(inp, (3,0,1,2))
-            tar = np.transpose(tar, (3,0,1,2))
-        else:   
-            inp = self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]
-            tar = self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]
-
+    def define_graph(self):
+        self.inp, self.tar = self.source()
         if self.do_rotate:
-            rand = np.random.randint(low=1, high=25)
-            inp = self.rotate(inp, rand)
-            tar = self.rotate(tar, rand)
-        torch.cuda.nvtx.range_pop()
+            #rotate 1
+            angle1 = self.fcast(self.icast(self.rng_angle()) * 90)
+            dinp = self.rotate1(self.inp.gpu(), angle=angle1)
+            dtar = self.rotate1(self.tar.gpu(), angle=angle1)
+            #rotate 2
+            angle2 = self.fcast(self.icast(self.rng_angle()) * 90)
+            dinp = self.rotate2(dinp, angle=angle2)
+            dtar = self.rotate2(dtar, angle=angle2)
+            #rotate 3
+            angle3 = self.fcast(self.icast(self.rng_angle()) * 90)
+            dinp = self.rotate3(dinp, angle=angle3)
+            dtar = self.rotate3(dtar, angle=angle3)
+            #transpose data
+            self.dinp = self.transpose(dinp)
+            self.dtar = self.transpose(dtar)
+        else:
+            self.dinp = self.transpose(self.inp.gpu())
+            self.dtar = self.transpose(self.tar.gpu())
+        return self.dinp, self.dtar
 
-        return torch.as_tensor(np.copy(inp)), torch.as_tensor(np.copy(tar))
+
+class RandomCropDataLoader(object):
+    """Random crops"""
+    def __init__(self, params, num_workers=1, device_id=0):
+        self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)
+        self.pipe.build()
+        self.length = params.Nsamples
+        self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+        
+    def __len__(self):
+        return self.length
+
+    def __iter__(self):
+        for token in self.iterator:
+            inp = token[0]['inp']
+            tar = token[0]['tar']
+            yield inp, tar
 
 
 class RandomRotator(object):

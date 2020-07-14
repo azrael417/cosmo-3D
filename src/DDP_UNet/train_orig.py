@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 
 import torch
+#import torchvision
 import torch.nn as nn
 import torch.optim as optim
 #from torch.utils.tensorboard import SummaryWriter
@@ -17,9 +18,8 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-#from utils.data_loader_dali_lowmem import get_data_loader_distributed
-from utils.data_loader_dali import get_data_loader_distributed
-#from utils.data_loader_dali_dummy import get_data_loader_distributed
+from utils.data_loader import get_data_loader_distributed
+#from utils.data_loader_dummy import get_data_loader_distributed
 from utils.plotting import generate_images, meanL1
 from networks import UNet
 
@@ -39,16 +39,16 @@ def adjust_LR(optimizer, params, iternum):
 
 
 def train(params, args, world_rank, local_rank):
-  
-  #logging info
-  logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, local_rank))
-  #train_data_loader = get_data_loader_distributed(params, world_rank)
-  train_data_loader = get_data_loader_distributed(params, world_rank, local_rank)
-  logging.info('rank %d, data loader initialized'%world_rank)
 
   # set device
   device = torch.device("cuda:{}".format(local_rank))
   
+  #logging info
+  logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, local_rank))
+  train_data_loader = get_data_loader_distributed(params, world_rank, local_rank)
+  logging.info('rank %d, data loader initialized'%world_rank)
+
+  # create model
   model = UNet.UNet(params)
   model.to(device)
   if not args.resuming:
@@ -57,8 +57,11 @@ def train(params, args, world_rank, local_rank):
   optimizer = optimizers.FusedAdam(model.parameters(), lr = params.lr)
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
-    model = DDP(model, device_ids=[local_rank])
+    model = DDP(model, device_ids=[device.index])
 
+  # loss
+  criterion = UNet.CosmoLoss(params.LAMBDA_2)
+    
   # amp stuff
   gscaler = amp.GradScaler()
     
@@ -68,7 +71,7 @@ def train(params, args, world_rank, local_rank):
   if args.resuming:
     if world_rank==0:
       logging.info("Loading checkpoint %s"%params.checkpoint_path)
-    checkpoint = torch.load(params.checkpoint_path, map_location=device)
+    checkpoint = torch.load(params.checkpoint_path, map_location = device)
     model.load_state_dict(checkpoint['model_state'])
     iters = checkpoint['iters']
     startEpoch = checkpoint['epoch'] + 1
@@ -78,7 +81,8 @@ def train(params, args, world_rank, local_rank):
     logging.info(model)
     logging.info("Starting Training Loop...")
 
-    
+
+  #for i, data in enumerate(train_data_loader, 0):                                                                                                      
   for epoch in range(startEpoch, startEpoch+params.num_epochs):
     start = time.time()
     nsteps = 0
@@ -88,30 +92,36 @@ def train(params, args, world_rank, local_rank):
 
     model.train()
     step_time = time.time()
-    for i, data in enumerate(train_data_loader, 0):
-      iters += 1
 
-      #adjust_LR(optimizer, params, iters)
-      inp, tar = data
+    with torch.autograd.profiler.emit_nvtx():
+      for i, data in enumerate(train_data_loader, 0):
+        iters += 1
 
-      if not args.io_only:
+        #adjust_LR(optimizer, params, iters)
+        inp, tar = map(lambda x: x.to(device), data)
 
-        # fw pass
-        fw_time -= time.time()
-        optimizer.zero_grad()
-        with amp.autocast():
-          gen = model(inp)
-          loss = UNet.loss_func(gen, tar, params)
-        fw_time += time.time()
+        if not args.io_only:
 
-        # bw pass
-        bw_time -= time.time()
-        gscaler.scale(loss).backward()
-        gscaler.step(optimizer)
-        gscaler.update()
-        bw_time += time.time()
+          # fw pass
+          fw_time -= time.time()
+          optimizer.zero_grad()
+          with amp.autocast(args.enable_amp):
+            gen = model(inp)
+            loss = criterion(gen, tar)
+          fw_time += time.time()
+
+          # bw pass
+          bw_time -= time.time()
+          if args.enable_amp:
+            gscaler.scale(loss).backward()
+            gscaler.step(optimizer)
+            gscaler.update()
+          else:
+            loss.backward()
+            optimizer.step()
+          bw_time += time.time()
       
-      nsteps += 1
+        nsteps += 1
 
     # epoch done
     dist.barrier()
@@ -180,6 +190,7 @@ if __name__ == '__main__':
   parser.add_argument("--config", default='default', type=str)
   parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   parser.add_argument("--io_only", action="store_true")
+  parser.add_argument("--enable_amp", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num
@@ -195,10 +206,10 @@ if __name__ == '__main__':
     comm_rank = int(os.getenv('OMPI_COMM_WORLD_RANK',0))
     comm_size = int(os.getenv("OMPI_COMM_WORLD_SIZE",0))
   elif (args.comm_mode == "slurm-nccl"):
-    comm_addr=os.getenv("SLURM_SRUN_COMM_HOST")
+    comm_addr = os.getenv("SLURM_SRUN_COMM_HOST")
     comm_size = int(os.getenv("SLURM_NTASKS"))
     comm_rank = int(os.getenv("PMI_RANK"))
-  
+
   # common stuff
   comm_local_rank = comm_rank % torch.cuda.device_count()
   comm_port = "29500"
@@ -209,6 +220,9 @@ if __name__ == '__main__':
   dist.init_process_group(backend = "nccl",
                         rank = comm_rank,
                         world_size = comm_size)
+
+  # set device here to avoid unnecessary surprises
+  torch.cuda.set_device(comm_local_rank)
 
   #torch.backends.cudnn.benchmark = True
   args.resuming = False
@@ -235,7 +249,7 @@ if __name__ == '__main__':
 
   train(params, args, comm_rank, comm_local_rank)
   #if comm_rank == 0:
-  #  args.tboard_writer.flush()
-  #  args.tboard_writer.close()
+    #args.tboard_writer.flush()
+    #args.tboard_writer.close()
   logging.info('DONE ---- rank %d'%comm_rank)
 

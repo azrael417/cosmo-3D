@@ -10,12 +10,8 @@ def worker_init(wrk_id):
 
 
 def get_data_loader_distributed(params, world_rank, local_rank):
-    fname = params.data_path
-    with h5py.File(fname, 'r') as f:
-        Nbody = f['Nbody'][:,:,:,:].astype(np.float32)
-        Hydro = f['Hydro'][:,:,:,:].astype(np.float32)
 
-    dataset = RandomCropDataset(params, Nbody, Hydro)
+    dataset = RandomCropDataset(params)
 
     train_loader = DataLoader(dataset,
                               batch_size=params.batch_size,
@@ -28,10 +24,7 @@ def get_data_loader_distributed(params, world_rank, local_rank):
 
 class RandomCropDataset(Dataset):
     """Random crops"""
-    def __init__(self, params, Nbody, Hydro):
-        self.Hydro = Hydro
-        self.Nbody = Nbody
-        self.length = Nbody.shape[1]
+    def __init__(self, params):
         self.size = params.data_size
         self.Nsamples = 20
         self.transposed = False if params.transposed_input==0 else True
@@ -39,31 +32,27 @@ class RandomCropDataset(Dataset):
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
         self.rotate = RandomRotator()
+        self.rng = np.random.default_rng()
 
     def __len__(self):
         return self.Nsamples
 
     def __getitem__(self, idx):
-        torch.cuda.nvtx.range_push("RandomCropDataset:next")
-        x = np.random.randint(low=0, high=self.length-self.size)
-        y = np.random.randint(low=0, high=self.length-self.size)
-        z = np.random.randint(low=0, high=self.length-self.size)
 
         if self.transposed:
-            inp = self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]
-            tar = self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]
+            inp = self.rng.random((self.size, self.size, self.size, 4), dtype=np.float32)
+            tar = self.rng.random((self.size, self.size, self.size, 5), dtype=np.float32)
             inp = np.transpose(inp, (3,0,1,2))
             tar = np.transpose(tar, (3,0,1,2))
         else:   
-            inp = self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]
-            tar = self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]
+            inp = self.rng.random((4, self.size, self.size, self.size), dtype=np.float32)
+            tar = self.rng.random((5, self.size, self.size, self.size), dtype=np.float32)
 
         if self.do_rotate:
             rand = np.random.randint(low=1, high=25)
             inp = self.rotate(inp, rand)
             tar = self.rotate(tar, rand)
-        torch.cuda.nvtx.range_pop()
-
+            
         return torch.as_tensor(np.copy(inp)), torch.as_tensor(np.copy(tar))
 
 

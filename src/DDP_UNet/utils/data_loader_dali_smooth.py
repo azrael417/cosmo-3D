@@ -4,6 +4,9 @@ from torch.utils.data import DataLoader, Dataset, DistributedSampler
 from torch import Tensor
 import h5py
 
+#concurrent futures
+import concurrent.futures as cf
+
 #dali stuff
 from nvidia.dali.pipeline import Pipeline
 import nvidia.dali.ops as ops            
@@ -22,7 +25,7 @@ def get_data_loader_distributed(params, world_rank):
 
 class DaliInputIterator(object):
     def __init__(self, params):
-        with h5py.File(params.data_path, 'r', driver="core", backing_store=False) as f:
+        with h5py.File(params.data_path, 'r') as f:
             self.Hydro = f['Hydro'][...]
             self.Nbody = f['Nbody'][...]
         self.length = self.Nbody.shape[1]
@@ -38,29 +41,67 @@ class DaliInputIterator(object):
         self.transposed = False if params.transposed_input==0 else True
         print("Transposed Input" if self.transposed else "Original Input")
 
+        # threadpool
+        self.executor = cf.ThreadPoolExecutor(max_workers = 2)
+        
+        # prepared arrays for double buffering
+        self.curr_buff = 0
+        self.Nbody_buff = None
+        self.Hydro_buff = None
+        if self.transposed:
+            self.Nbody_buff = [np.zeros((1, self.extract_size, self.extract_size, self.extract_size, self.Nbody.shape[3]), dtype=self.Nbody.dtype),
+                               np.zeros((1, self.extract_size, self.extract_size, self.extract_size, self.Nbody.shape[3]), dtype=self.Nbody.dtype)]
+            self.Hydro_buff = [np.zeros((1, self.extract_size, self.extract_size, self.extract_size, self.Hydro.shape[3]), dtype=self.Hydro.dtype),
+                               np.zeros((1, self.extract_size, self.extract_size, self.extract_size, self.Hydro.shape[3]), dtype=self.Hydro.dtype)]
+        else:
+            self.Nbody_buff = [np.zeros((1, self.Nbody.shape[0], self.extract_size, self.extract_size, self.extract_size), dtype=self.Nbody.dtype),
+                               np.zeros((1, self.Nbody.shape[0], self.extract_size, self.extract_size, self.extract_size), dtype=self.Nbody.dtype)]
+            self.Hydro_buff = [np.zeros((1, self.Hydro.shape[0], self.extract_size, self.extract_size, self.extract_size), dtype=self.Hydro.dtype),
+                               np.zeros((1, self.Hydro.shape[0], self.extract_size, self.extract_size, self.extract_size), dtype=self.Hydro.dtype)]
+
+        # submit data fetch
+        buff_ind = self.curr_buff
+        self.future = self.executor.submit(self.get_rand_slice, buff_ind)
+
     def __iter__(self):
         self.i = 0
         self.n = self.Nsamples
         return self
 
-    def __next__(self):
-        rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
+    def get_rand_slice(self, buff_id):
+        # RNG
+        rand = self.rng.randint(low=0, high=(self.length-self.extract_size), size=(3))
         x = rand[0]
         y = rand[1]
         z = rand[2]
+        
+        # Slice
         if self.transposed:
-            inp = np.expand_dims(np.copy(self.Nbody[x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size, :]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size, :]), axis=0)
+            self.Nbody_buff[buff_id][0, ...] = self.Nbody[x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size, :]
+            self.Hydro_buff[buff_id][0, ...] = self.Hydro[x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size, :]
         else:
-            inp = np.expand_dims(np.copy(self.Nbody[:, x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size]), axis=0)
-            tar = np.expand_dims(np.copy(self.Hydro[:, x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size]), axis=0)
+            self.Nbody_buff[buff_id][0, ...] = self.Nbody[:, x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size]
+            self.Hydro_buff[buff_id][0, ...] = self.Hydro[:, x:x+self.extract_size, y:y+self.extract_size, z:z+self.extract_size]
 
-        ##rotation axis
-        #angles = self.rng.random_sample(size=(1,2)).astype(np.float32)
-        #angles[:, 0] *= 2. * np.pi
-        #angles[:, 1] *= np.pi
-        #axis = np.stack([ np.cos(angles[:, 0]) * np.sin(angles[:, 1]), np.sin(angles[:, 0]) * np.sin(angles[:, 1]), np.cos(angles[:, 1]) ], axis=1)
+        # Return handles
+        inp = self.Nbody_buff[buff_id]
+        tar = self.Hydro_buff[buff_id]
+        
+        return inp, tar
+
+
     
+    def __next__(self):
+        torch.cuda.nvtx.range_push("DaliInputIterator:next")
+        # wait for batch load to complete
+        inp, tar = self.future.result()
+
+        # submit new work before proceeding
+        self.curr_buff = (self.curr_buff + 1) % 2
+        buff_ind = self.curr_buff
+        self.future = self.executor.submit(self.get_rand_slice, buff_ind)
+        torch.cuda.nvtx.range_pop()
+        
         return inp, tar
     
     next = __next__
@@ -73,9 +114,10 @@ class DaliPipeline(Pipeline):
                                            device_id,
                                            seed=12)
         dii = DaliInputIterator(params)
-        self.iterator = iter(dii)
-        self.input = ops.ExternalSource()
-        self.target = ops.ExternalSource()
+        self.no_copy = params.no_copy
+        if self.no_copy:
+            print("Use Zero Copy ES")
+        self.source = ops.ExternalSource(source = dii, num_outputs = 2, layout = ["DHWC", "DHWC"], no_copy = self.no_copy)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
         self.rng_angle = ops.Uniform(device = "cpu",
@@ -84,7 +126,6 @@ class DaliPipeline(Pipeline):
                                     range = [-1., 1.],
                                     shape=(3))
         self.rotate = ops.Rotate(device = "gpu",
-                                 axis = (1.,1.,1.),
                                  interp_type = types.INTERP_LINEAR,
                                  keep_size=True)
         self.transpose = ops.Transpose(device = "gpu",
@@ -93,14 +134,14 @@ class DaliPipeline(Pipeline):
                              crop = (dii.size, dii.size, dii.size))
 
     def define_graph(self):
-        self.inp = self.input()
-        self.tar = self.target()
+        self.inp, self.tar = self.source()
+        
         if self.do_rotate:
             # rotate
             angle = self.rng_angle()
-            #axis = self.rng_axis()
-            dinp = self.rotate(self.inp.gpu(), angle=angle)
-            dtar = self.rotate(self.tar.gpu(), angle=angle)
+            axis = self.rng_axis()
+            dinp = self.rotate(self.inp.gpu(), axis = axis, angle = angle)
+            dtar = self.rotate(self.tar.gpu(), axis = axis, angle = angle)
             # crop because rotation can be bigger
             dinp = self.crop(dinp)
             dtar = self.crop(dtar)
@@ -111,11 +152,6 @@ class DaliPipeline(Pipeline):
             self.dinp = self.transpose(self.inp.gpu())
             self.dtar = self.transpose(self.tar.gpu())
         return self.dinp, self.dtar
-
-    def iter_setup(self):
-        inp, tar = self.iterator.next()
-        self.feed_input(self.inp, inp)
-        self.feed_input(self.tar, tar)
 
 
 class RandomCropDataLoader(object):
