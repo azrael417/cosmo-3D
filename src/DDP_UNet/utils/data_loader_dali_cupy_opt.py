@@ -24,6 +24,104 @@ def get_data_loader_distributed(params, world_rank, device_id=0):
     return train_loader
 
 
+class DaliParameterIterator(object):
+    def __init__(self, params):
+        self.rng = np.random.RandomState(seed=12345)
+        self.Nsamples = params.Nsamples
+
+    def __iter__(self):
+        self.i = 0
+        self.n = self.Nsamples
+        return self
+
+    def __next__(self):
+        # select op
+        index = int(self.rng.randint(low=0, high=24))
+
+        # select angle and axis
+        if index == 0:
+            axis = [1, 0, 0]
+            angle = 0
+        elif index == 1:
+            axis = [1, 0, 0]
+            angle = 90
+        elif index == 2:
+            axis = [1, 0, 0]
+            angle = -90
+        elif index == 3:
+            axis = [0, 1, 0]
+            angle = 90
+        elif index == 4:
+            axis = [0, 1, 0]
+            angle = -90
+        elif index == 5:
+            axis = [0, 0, 1]
+            angle = 90
+        elif index == 6:
+            axis = [0, 0, 1]
+            angle = -90
+
+        elif index == 7:
+            axis = [1, 0, 0]
+            angle = 180
+        elif index == 8:
+            axis = [0, 1, 0]
+            angle = 180
+        elif index == 9:
+            axis = [0, 0, 1]
+            angle = 180
+
+        elif index == 10:
+            axis = [1, 1, 0]
+            angle = 180
+        elif index == 11:
+            axis = [1, 0, 1]
+            angle = 180
+        elif index == 12:
+            axis = [0, 1, 1]
+            angle = 180
+        elif index == 13:
+            axis = [1, -1, 0]
+            angle = 180
+        elif index == 14:
+            axis = [1, 0, -1]
+            angle = 180
+        elif index == 15:
+            axis = [0, 1, -1]
+            angle = 180
+
+        elif index == 16:
+            axis = [1, 1, 1]
+            angle = 120
+        elif index == 17:
+            axis = [-1, 1, 1]
+            angle = 120
+        elif index == 18:
+            axis = [1, -1, 1]
+            angle = 120
+        elif index == 19:
+            axis = [1, 1, -1]
+            angle = 120
+        elif index == 20:
+            axis = [-1, -1, 1]
+            angle = 120
+        elif index == 21:
+            axis = [-1, 1, -1]
+            angle = 120
+        elif index == 22:
+            axis = [1, -1, -1]
+            angle = 120
+        elif index == 23:
+            axis = [-1, -1, -1]
+            angle = 120
+
+        # recast into appropriate shape
+        axis = np.expand_dims(np.array(axis, dtype=np.float32), axis=0)
+        angle = np.expand_dims(np.array((angle), dtype=np.float32), axis=0)
+        
+        return axis, angle
+    
+
 class DaliInputIterator(object):
     def pin(self, array):
         mem = cp.cuda.alloc_pinned_memory(array.nbytes)
@@ -89,6 +187,7 @@ class DaliInputIterator(object):
         self.i = 0
         self.n = self.Nsamples
         return self
+        
     
     def get_rand_slice(self, buff_id):
         # RNG
@@ -106,12 +205,14 @@ class DaliInputIterator(object):
             self.Hydro_buff_cpu[0, ...] = self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]
 
         # upload
+        axis = None,
+        angle = None
         with cp.cuda.stream.Stream() as stream_htod:
             self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu)
             self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu)
             stream_htod.synchronize()
         
-        # Return handles
+        # create handles
         inp = self.Nbody_buff_gpu[buff_id]
         tar = self.Hydro_buff_gpu[buff_id]
         
@@ -140,6 +241,7 @@ class DaliPipeline(Pipeline):
                                            device_id,
                                            seed=12)
         dii = DaliInputIterator(params, device_id)
+        dpi = DaliParameterIterator(params)
         self.no_copy = params.no_copy
         if self.no_copy:
             print("Use Zero Copy ES")
@@ -148,14 +250,11 @@ class DaliPipeline(Pipeline):
                                          num_outputs = 2,
                                          layout = ["DHWC", "DHWC"],
                                          no_copy = self.no_copy)
+        self.params = ops.ExternalSource(device = "cpu",
+                                         source = dpi,
+                                         num_outputs = 2)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
-        self.rng_choice = ops.Uniform(device = "cpu",
-                                      range = [0, 23])
-        self.icast = ops.Cast(device = "cpu",
-                              dtype = types.INT32)
-        self.fcast = ops.Cast(device = "cpu",
-                             dtype = types.FLOAT)
         self.rotate = ops.Rotate(device = "gpu",
                                  interp_type = types.INTERP_LINEAR)
         self.transpose = ops.Transpose(device = "gpu",
@@ -163,92 +262,12 @@ class DaliPipeline(Pipeline):
 
     def define_graph(self):
         self.inp, self.tar = self.source()
-        
+        self.axis, self.angle = self.params()
+
         if self.do_rotate:
-
-            # select op
-            index = self.icast(self.rng_choice())
-
-            # we are done
-            if index == 0:
-                axis = [1, 0, 0]
-                angle = [0]
-            elif index == 1:
-                axis = [1, 0, 0]
-                angle = [90]
-            elif index == 2:
-                axis = [1, 0, 0]
-                angle = [-90]
-            elif index == 3:
-                axis = [0, 1, 0]
-                angle = [90]
-            elif index == 4:
-                axis = [0, 1, 0]
-                angle = [-90]
-            elif index == 5:
-                axis = [0, 0, 1]
-                angle = [90]
-            elif index == 6:
-                axis = [0, 0, 1]
-                angle = [-90]
-                    
-            elif index == 7:
-                axis = [1, 0, 0]
-                angle = [180]
-            elif index == 8:
-                axis = [0, 1, 0]
-                angle = [180]
-            elif index == 9:
-                axis = [0, 0, 1]
-                angle = [180]
-                
-            elif index == 10:
-                axis = [1, 1, 0]
-                angle = [180]
-            elif index == 11:
-                axis = [1, 0, 1]
-                angle = [180]
-            elif index == 12:
-                axis = [0, 1, 1]
-                angle = [180]
-            elif index == 13:
-                axis = [1, -1, 0]
-                angle = [180]
-            elif index == 14:
-                axis = [1, 0, -1]
-                angle = [180]
-            elif index == 15:
-                axis = [0, 1, -1]
-                angle = [180]
-                    
-            elif index == 16:
-                axis = [1, 1, 1]
-                angle = [120]
-            elif index == 17:
-                axis = [-1, 1, 1]
-                angle = [120]
-            elif index == 18:
-                axis = [1, -1, 1]
-                angle = [120]
-            elif index == 19:
-                axis = [1, 1, -1]
-                angle = [120]
-            elif index == 20:
-                axis = [-1, -1, 1]
-                angle = [120]
-            elif index == 21:
-                axis = [-1, 1, -1]
-                angle = [120]
-            elif index == 22:
-                axis = [1, -1, -1]
-                angle = [120]
-            elif index == 23:
-                axis = [-1, -1, -1]
-                angle = [120]
-
             # rotate
-            self.dinp = self.rotate(self.inp, axis=axis, angle=angle)
-            self.dtar = self.rotate(self.tar, axis=axis, angle=angle)
+            self.dinp = self.rotate(self.inp, axis=self.axis, angle=self.angle)
+            self.dtar = self.rotate(self.tar, axis=self.axis, angle=self.angle)
 
             # transpose
             self.dinp = self.transpose(self.dinp)

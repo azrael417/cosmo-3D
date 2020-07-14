@@ -10,7 +10,7 @@ mpioptions="--allow-run-as-root --map-by ppr:8:socket:PE=3"
 for totalranks in 1 2 4 8 16; do
 
     # tag
-    tag="dali-nocopy-cupy_amp_threads_nranks${totalranks}"
+    tag="dali-nocopy-cupy-opt_amp_threads_nranks${totalranks}"
 
     # files
     outfile="/data/profiles/timing_${tag}.out"
