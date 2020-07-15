@@ -30,6 +30,16 @@ class DaliInputIterator(object):
         ret = np.frombuffer(mem, array.dtype, array.size).reshape(array.shape)
         ret[...] = array
         return ret
+
+    def open_file(self):
+        self.infile = h5py.File(self.infilename, 'r')
+        self.Hydro = self.infile['Hydro']
+        self.Nbody = self.infile['Nbody']
+
+    def close_file(self):
+        self.infile.close()
+        self.Hydro = None
+        self.Nbody = None
     
     def __init__(self, params, device_id):
         # set device
@@ -45,9 +55,7 @@ class DaliInputIterator(object):
         
         # set input
         self.infilename = params.data_path
-        self.infile = h5py.File(params.data_path, 'r')
-        self.Hydro = self.infile['Hydro']
-        self.Nbody = self.infile['Nbody']
+        self.open_file()
 
         # set other parameters
         self.length = self.Nbody.shape[1]
@@ -58,12 +66,10 @@ class DaliInputIterator(object):
         self.transposed = False if params.transposed_input==0 else True
         print("Transposed Input" if self.transposed else "Original Input")
         # threadpool
-        self.executor = cf.ThreadPoolExecutor(max_workers = 2)
-        #self.executor = cf.ProcessPoolExecutor(max_workers = 2)
+        self.executor = cf.ThreadPoolExecutor(max_workers = 1, initializer = self.open_file)
+        #self.executor = cf.ProcessPoolExecutor(max_workers = 1, initializer = self.open_file)
         # prepared arrays for double buffering
         self.curr_buff = 0
-        self.Nbody_buff = None
-        self.Hydro_buff = None
         if self.transposed:
             # CPU
             self.Nbody_buff_cpu = self.pin(np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype))
@@ -85,13 +91,17 @@ class DaliInputIterator(object):
             self.Hydro_buff_gpu = [cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype),
                                    cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]
 
-        # close the file
-        #self.infile.close()
-            
+        # close file to be opened in threads later
+        self.close_file()
+        
         # submit data fetch
         buff_ind = self.curr_buff
         self.future = self.executor.submit(self.get_rand_slice, buff_ind)
 
+    def __del__(self):
+        self.future.result()
+        self.close_file()
+        
     def __iter__(self):
         self.i = 0
         self.n = self.Nsamples
