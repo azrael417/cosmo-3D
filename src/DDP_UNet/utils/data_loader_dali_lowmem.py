@@ -32,15 +32,19 @@ class DaliInputIterator(object):
         return ret
     
     def __init__(self, params, device_id):
-         # set device
+        # set device
         self.device_id = device_id
         cp.cuda.Device(self.device_id).use()
 
         # memory pool
         self.pinned_memory_pool = cp.cuda.PinnedMemoryPool()
         cp.cuda.set_pinned_memory_allocator(self.pinned_memory_pool.malloc)
+
+        # stream
+        self.stream_htod = cp.cuda.Stream(non_blocking=True)
         
         # set input
+        self.infilename = params.data_path
         self.infile = h5py.File(params.data_path, 'r')
         self.Hydro = self.infile['Hydro']
         self.Nbody = self.infile['Nbody']
@@ -79,8 +83,11 @@ class DaliInputIterator(object):
             self.Nbody_buff_gpu = [cp.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype),
                                    cp.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype)]
             self.Hydro_buff_gpu = [cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype),
-                                   cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]            
-        
+                                   cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]
+
+        # close the file
+        #self.infile.close()
+            
         # submit data fetch
         buff_ind = self.curr_buff
         self.future = self.executor.submit(self.get_rand_slice, buff_ind)
@@ -91,37 +98,52 @@ class DaliInputIterator(object):
         return self
 
     def get_rand_slice(self, buff_id):
+        # set device
+        cp.cuda.Device(self.device_id).use()
+
+        torch.cuda.nvtx.range_push("DaliInputIterator:get_rand_slice")
+        
         # RNG
         rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
         x = rand[0]
         y = rand[1]
         z = rand[2]
         
-        # Slice
+        # Slice and upload, interleave nbody and hydro
         if self.transposed:
+            # Nbody
             self.Nbody.read_direct(self.Nbody_buff_cpu,
                                    np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:4],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:4])
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
+            
+            # Hydro
             self.Hydro.read_direct(self.Hydro_buff_cpu,
                                    np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:5],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:5])
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
         else:
+            # Nbody
             self.Nbody.read_direct(self.Nbody_buff_cpu,
                                    np.s_[0:4, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:4, 0:self.size, 0:self.size, 0:self.size])
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
+            
+            # Hydro
             self.Hydro.read_direct(self.Hydro_buff_cpu,
                                    np.s_[0:5, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:5, 0:self.size, 0:self.size, 0:self.size])
-
-        # upload
-        with cp.cuda.stream.Stream() as stream_htod:
-            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu)
-            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu)
-            stream_htod.synchronize()
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
+                
+        # synchronize
+        self.stream_htod.synchronize()
 
         # Return handles
         inp = self.Nbody_buff_gpu[buff_id]
         tar = self.Hydro_buff_gpu[buff_id]
+
+        # exit region
+        torch.cuda.nvtx.range_pop()
         
         return inp, tar
 

@@ -137,6 +137,9 @@ class DaliInputIterator(object):
         # memory pool
         self.pinned_memory_pool = cp.cuda.PinnedMemoryPool()
         cp.cuda.set_pinned_memory_allocator(self.pinned_memory_pool.malloc)
+
+        # stream
+        self.stream_htod = cp.cuda.Stream(non_blocking=True)
         
         # stage in data
         with h5py.File(params.data_path, 'r') as f:
@@ -190,31 +193,45 @@ class DaliInputIterator(object):
         
     
     def get_rand_slice(self, buff_id):
+        # set device
+        cp.cuda.Device(self.device_id).use()
+        
+        # mark region
+        torch.cuda.nvtx.range_push("DaliInputIterator:get_rand_slice")
+        
         # RNG
         rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
         x = rand[0]
         y = rand[1]
         z = rand[2]
         
-        # Slice
+        # Slice and upload
         if self.transposed:
+            # Nbody
             self.Nbody_buff_cpu[0, ...] = self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
+            
+            # Hydro
             self.Hydro_buff_cpu[0, ...] = self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
         else:
+            # Nbody
             self.Nbody_buff_cpu[0, ...] = self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
+            
+            # Hydro
             self.Hydro_buff_cpu[0, ...] = self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
 
-        # upload
-        axis = None,
-        angle = None
-        with cp.cuda.stream.Stream() as stream_htod:
-            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu)
-            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu)
-            stream_htod.synchronize()
+        # synchronize
+        self.stream_htod.synchronize()
         
         # create handles
         inp = self.Nbody_buff_gpu[buff_id]
         tar = self.Hydro_buff_gpu[buff_id]
+
+        # finish region
+        torch.cuda.nvtx.range_pop()
         
         return inp, tar
     

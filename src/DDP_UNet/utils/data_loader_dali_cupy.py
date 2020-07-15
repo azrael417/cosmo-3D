@@ -39,6 +39,9 @@ class DaliInputIterator(object):
         # memory pool
         self.pinned_memory_pool = cp.cuda.PinnedMemoryPool()
         cp.cuda.set_pinned_memory_allocator(self.pinned_memory_pool.malloc)
+
+        # steam
+        self.stream_htod = cp.cuda.Stream(non_blocking=True)
         
         # stage in data
         with h5py.File(params.data_path, 'r') as f:
@@ -99,17 +102,25 @@ class DaliInputIterator(object):
         
         # Slice
         if self.transposed:
+            # Nbody
             self.Nbody_buff_cpu[0, ...] = self.Nbody[x:x+self.size, y:y+self.size, z:z+self.size, :]
-            self.Hydro_buff_cpu[0, ...] = self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]
-        else:
-            self.Nbody_buff_cpu[0, ...] = self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]
-            self.Hydro_buff_cpu[0, ...] = self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
 
-        # upload
-        with cp.cuda.stream.Stream() as stream_htod:
-            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu)
-            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu)
-            stream_htod.synchronize()
+            # Hydro
+            self.Hydro_buff_cpu[0, ...] = self.Hydro[x:x+self.size, y:y+self.size, z:z+self.size, :]
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
+            
+        else:
+            # Nbody
+            self.Nbody_buff_cpu[0, ...] = self.Nbody[:, x:x+self.size, y:y+self.size, z:z+self.size]
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
+
+            # Hydro
+            self.Hydro_buff_cpu[0, ...] = self.Hydro[:, x:x+self.size, y:y+self.size, z:z+self.size]
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
+
+        # synchronize
+        stream_htod.synchronize()
         
         # Return handles
         inp = self.Nbody_buff_gpu[buff_id]
