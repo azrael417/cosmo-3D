@@ -1,4 +1,5 @@
 import torch
+import cupy as cp
 import numpy as np
 from torch.utils.data import DataLoader, Dataset, DistributedSampler
 from torch import Tensor
@@ -24,10 +25,27 @@ def get_data_loader_distributed(params, world_rank, device_id=0):
 
 
 class DaliInputIterator(object):
-    def __init__(self, params):
-        self.infile= h5py.File(params.data_path, 'r')
+    def pin(self, array):
+        mem = cp.cuda.alloc_pinned_memory(array.nbytes)
+        ret = np.frombuffer(mem, array.dtype, array.size).reshape(array.shape)
+        ret[...] = array
+        return ret
+    
+    def __init__(self, params, device_id):
+         # set device
+        self.device_id = device_id
+        cp.cuda.Device(self.device_id).use()
+
+        # memory pool
+        self.pinned_memory_pool = cp.cuda.PinnedMemoryPool()
+        cp.cuda.set_pinned_memory_allocator(self.pinned_memory_pool.malloc)
+        
+        # set input
+        self.infile = h5py.File(params.data_path, 'r')
         self.Hydro = self.infile['Hydro']
         self.Nbody = self.infile['Nbody']
+
+        # set other parameters
         self.length = self.Nbody.shape[1]
         self.size = params.data_size
         self.Nsamples = params.Nsamples
@@ -37,20 +55,31 @@ class DaliInputIterator(object):
         print("Transposed Input" if self.transposed else "Original Input")
         # threadpool
         self.executor = cf.ThreadPoolExecutor(max_workers = 2)
+        #self.executor = cf.ProcessPoolExecutor(max_workers = 2)
         # prepared arrays for double buffering
         self.curr_buff = 0
         self.Nbody_buff = None
         self.Hydro_buff = None
         if self.transposed:
-            self.Nbody_buff = [np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype),
-                               np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype)]
-            self.Hydro_buff = [np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype),
-                               np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype)]
+            # CPU
+            self.Nbody_buff_cpu = self.pin(np.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype))
+            self.Hydro_buff_cpu = self.pin(np.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype))
+
+            # GPU
+            self.Nbody_buff_gpu = [cp.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype),
+                                   cp.zeros((1, self.size, self.size, self.size, self.Nbody.shape[3]), dtype=self.Nbody.dtype)]
+            self.Hydro_buff_gpu = [cp.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype),
+                                   cp.zeros((1, self.size, self.size, self.size, self.Hydro.shape[3]), dtype=self.Hydro.dtype)]
         else:
-            self.Nbody_buff = [np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype),
-                               np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype)]
-            self.Hydro_buff = [np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype),
-                               np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]
+            # CPU
+            self.Nbody_buff_cpu = self.pin(np.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype))
+            self.Hydro_buff_cpu = self.pin(np.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype))
+
+            # GPU
+            self.Nbody_buff_gpu = [cp.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype),
+                                   cp.zeros((1, self.Nbody.shape[0], self.size, self.size, self.size), dtype=self.Nbody.dtype)]
+            self.Hydro_buff_gpu = [cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype),
+                                   cp.zeros((1, self.Hydro.shape[0], self.size, self.size, self.size), dtype=self.Hydro.dtype)]            
         
         # submit data fetch
         buff_ind = self.curr_buff
@@ -70,23 +99,29 @@ class DaliInputIterator(object):
         
         # Slice
         if self.transposed:
-            self.Nbody.read_direct(self.Nbody_buff[buff_id],
+            self.Nbody.read_direct(self.Nbody_buff_cpu,
                                    np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:4],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:4])
-            self.Hydro.read_direct(self.Hydro_buff[buff_id],
+            self.Hydro.read_direct(self.Hydro_buff_cpu,
                                    np.s_[x:x+self.size, y:y+self.size, z:z+self.size, 0:5],
                                    np.s_[0:1, 0:self.size, 0:self.size, 0:self.size, 0:5])
         else:
-            self.Nbody.read_direct(self.Nbody_buff[buff_id],
+            self.Nbody.read_direct(self.Nbody_buff_cpu,
                                    np.s_[0:4, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:4, 0:self.size, 0:self.size, 0:self.size])
-            self.Hydro.read_direct(self.Hydro_buff[buff_id],
+            self.Hydro.read_direct(self.Hydro_buff_cpu,
                                    np.s_[0:5, x:x+self.size, y:y+self.size, z:z+self.size],
                                    np.s_[0:1, 0:5, 0:self.size, 0:self.size, 0:self.size])
 
+        # upload
+        with cp.cuda.stream.Stream() as stream_htod:
+            self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu)
+            self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu)
+            stream_htod.synchronize()
+
         # Return handles
-        inp = self.Nbody_buff[buff_id]
-        tar = self.Hydro_buff[buff_id]
+        inp = self.Nbody_buff_gpu[buff_id]
+        tar = self.Hydro_buff_gpu[buff_id]
         
         return inp, tar
 
@@ -113,40 +148,37 @@ class DaliPipeline(Pipeline):
                                            num_threads,
                                            device_id,
                                            seed=12)
-        dii = DaliInputIterator(params)
+        dii = DaliInputIterator(params, device_id)
         self.no_copy = params.no_copy
         if self.no_copy:
             print("Use Zero Copy ES")
-        self.source = ops.ExternalSource(source = dii, num_outputs = 2, layout = ["DHWC", "DHWC"], no_copy = self.no_copy)
+        self.source = ops.ExternalSource(device = "gpu",
+                                         source = dii,
+                                         num_outputs = 2,
+                                         layout = ["DHWC", "DHWC"],
+                                         no_copy = self.no_copy)
         self.do_rotate = True if params.rotate_input==1 else False
         print("Enable Rotation" if self.do_rotate else "Disable Rotation")
-        self.use_cpu = params.cpu_pipeline
-        print("Use CPU Pipeline" if self.use_cpu else "Use GPU Pipeline")
         self.rng_angle = ops.Uniform(device = "cpu",
                                      range = [-1.5, 2.5])
         self.icast = ops.Cast(device = "cpu",
                               dtype = types.INT32)
         self.fcast = ops.Cast(device = "cpu",
                              dtype = types.FLOAT)
-        dev = "cpu" if self.use_cpu else "gpu"
-        self.rotate1 = ops.Rotate(device = dev,
+        self.rotate1 = ops.Rotate(device = "gpu",
                                  axis = (1,0,0),
                                  interp_type = types.INTERP_LINEAR)
-        self.rotate2 = ops.Rotate(device = dev,
+        self.rotate2 = ops.Rotate(device = "gpu",
                                  axis = (0,1,0),
 		                 interp_type = types.INTERP_LINEAR)
-        self.rotate3 = ops.Rotate(device = dev,
+        self.rotate3 = ops.Rotate(device = "gpu",
                                  axis = (0,0,1),
 		                 interp_type = types.INTERP_LINEAR)
-        self.transpose = ops.Transpose(device = dev,
+        self.transpose = ops.Transpose(device = "gpu",
                                        perm=[3,0,1,2])
 
     def define_graph(self):
         self.inp, self.tar = self.source()
-
-        if not self.use_cpu:
-            self.inp = self.inp.gpu()
-            self.tar = self.tar.gpu()
         
         if self.do_rotate:
             #rotate 1
@@ -167,10 +199,6 @@ class DaliPipeline(Pipeline):
         else:
             self.dinp = self.transpose(self.inp)
             self.dtar = self.transpose(self.tar)
-
-        if self.use_cpu:
-            self.dinp = self.dinp.gpu()
-            self.dtar = self.dtar.gpu()
             
         return self.dinp, self.dtar
 
