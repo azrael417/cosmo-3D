@@ -9,7 +9,7 @@ RUN pip install cupy-cuda102
 RUN pip install mpi4py
 
 #install other python stuff necessary
-RUN pip install h5py ruamel.yaml matplotlib
+RUN pip install h5py ruamel.yaml matplotlib zarr
 
 #create /data mount point
 RUN mkdir -p /data /tmp/numa0 /tmp/numa1
