@@ -175,14 +175,13 @@ class DaliInputIterator(object):
         torch.cuda.nvtx.range_push("DaliInputIterator:next")
         # wait for batch load to complete
         self.future.result()
-        self.Nbody_buff_gpu[buff_id].set(self.Nbody_buff_cpu, self.stream_htod)
-        self.Hydro_buff_gpu[buff_id].set(self.Hydro_buff_cpu, self.stream_htod)
-        inp = self.Nbody_buff_gpu[buff_id]
-        tar = self.Hydro_buff_gpu[buff_id]
+        self.Nbody_buff_gpu[self.curr_buff].set(self.Nbody_buff_cpu, self.stream_htod)
+        self.Hydro_buff_gpu[self.curr_buff].set(self.Hydro_buff_cpu, self.stream_htod)
+        inp = self.Nbody_buff_gpu[self.curr_buff]
+        tar = self.Hydro_buff_gpu[self.curr_buff]
 
         # submit new work before proceeding
         self.curr_buff = (self.curr_buff + 1) % 2
-        buff_ind = self.curr_buff
         rand = self.rng.randint(low=0, high=(self.length-self.size), size=(3))
         x = rand[0]
         y = rand[1]
