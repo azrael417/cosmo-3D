@@ -20,13 +20,13 @@ cd ..
 #	      -f docker/Dockerfile.pytorch .
 #exit
 
-# dali
-nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.dali:${tag} \
-	      --build-arg TAG=${tag} \
-	      --build-arg PYVER=3.7 \
-	      --build-arg PYV=37 \
-	      -f docker/Dockerfile.dali .
-exit
+## dali
+#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.dali:${tag} \
+#	      --build-arg TAG=${tag} \
+#	      --build-arg PYVER=3.7 \
+#	      --build-arg PYV=37 \
+#	      -f docker/Dockerfile.dali .
+#exit
 
 # cosmo 3d
 for tg in old_scaler new_scaler; do

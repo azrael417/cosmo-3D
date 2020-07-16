@@ -24,16 +24,25 @@ def get_data_loader_distributed(params, world_rank, device_id=0):
     return train_loader
 
 
-def ReadSlice(filename, Nbody_buff, Hydro_buff, x, y, z, size):
-    with h5py.File(filename, 'r') as f:
-        f["Nbody"].read_direct(Nbody_buff,
-                               np.s_[x:x+size, y:y+size, z:z+size, 0:4],
-                               np.s_[0:1, 0:size, 0:size, 0:size, 0:4])
-        f["Hydro"].read_direct(Hydro_buff,
-                               np.s_[x:x+size, y:y+size, z:z+size, 0:5],
-                               np.s_[0:1, 0:size, 0:size, 0:size, 0:5])
+def HDF5Open(filename):
+    import h5py as h5
+    global h5file, GNbody, GHydro
+    h5file = h5.File(filename, 'r')
+    GNbody = h5file["Nbody"]
+    GHydro = h5file["Hydro"]
+    return
 
 
+def HDF5ReadSlice(Nbody_buff, Hydro_buff, x, y, z, size):
+    GNbody.read_direct(Nbody_buff,
+                       np.s_[x:x+size, y:y+size, z:z+size, 0:4],
+                       np.s_[0:1, 0:size, 0:size, 0:size, 0:4])
+    GHydro.read_direct(Hydro_buff,
+                       np.s_[x:x+size, y:y+size, z:z+size, 0:5],
+                       np.s_[0:1, 0:size, 0:size, 0:size, 0:5])
+    return
+
+    
 class DaliInputIterator(object):
     def pin(self, array):
         mem = cp.cuda.alloc_pinned_memory(array.nbytes)
@@ -76,7 +85,7 @@ class DaliInputIterator(object):
         self.transposed = False if params.transposed_input==0 else True
         print("Transposed Input" if self.transposed else "Original Input")
         # threadpool
-        self.executor = cf.ProcessPoolExecutor(max_workers = 1)
+        self.executor = cf.ProcessPoolExecutor(max_workers = 2, initializer=HDF5Open, initargs={self.infilename})
         # prepared arrays for double buffering
         self.curr_buff = 0
         if self.transposed:
@@ -109,7 +118,7 @@ class DaliInputIterator(object):
         x = rand[0]
         y = rand[1]
         z = rand[2]
-        self.future = self.executor.submit(ReadSlice, self.infilename, self.Nbody_buff_cpu, self.Hydro_buff_cpu, x, y, z, self.size)
+        self.future = self.executor.submit(HDF5ReadSlice, self.Nbody_buff_cpu, self.Hydro_buff_cpu, x, y, z, self.size)
 
     def __del__(self):
         self.future.result()
@@ -190,7 +199,7 @@ class DaliInputIterator(object):
         self.stream_htod.synchronize()
 
         # submit next guy
-        self.future = self.executor.submit(ReadSlice, self.infilename, self.Nbody_buff_cpu, self.Hydro_buff_cpu, x, y, z, self.size)
+        self.future = self.executor.submit(HDF5ReadSlice, self.Nbody_buff_cpu, self.Hydro_buff_cpu, x, y, z, self.size)
         torch.cuda.nvtx.range_pop()
         
         return inp, tar
