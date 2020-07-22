@@ -18,7 +18,7 @@ import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-from utils.data_loader_dali_cupy_opt import get_data_loader_distributed
+from utils.data_loader import get_data_loader_distributed
 from utils.plotting import generate_images, meanL1
 from networks import UNet
 
@@ -67,77 +67,82 @@ def train(params, args, world_rank):
     logging.info("Starting Training Loop...")
 
   device = torch.cuda.current_device()
-  for epoch in range(startEpoch, startEpoch+params.num_epochs):
-    start = time.time()
-    tr_time = 0.
-    log_time = 0.
+  with torch.autograd.profiler.emit_nvtx():
+    for epoch in range(startEpoch, startEpoch+params.num_epochs):
+      start = time.time()
+      tr_time = 0.
+      log_time = 0.
 
-    for i, data in enumerate(train_data_loader, 0):
-      tr_start = time.time()
-      iters += 1
-      adjust_LR(optimizer, params, iters)
-      inp, tar = map(lambda x: x.to(device), data)
-      b_size = inp.size(0)
+      epoch_step = 0
+      for i, data in enumerate(train_data_loader, 0):
+        torch.cuda.nvtx.range_push("cosmo3D:forward step {}".format(iters))
+        tr_start = time.time()
+        adjust_LR(optimizer, params, iters)
+        inp, tar = map(lambda x: x.to(device), data)
+        b_size = inp.size(0)
       
-      model.zero_grad()
-      gen = model(inp)
-      loss = UNet.loss_func(gen, tar, params)
-      
-      loss.backward() # fixed precision
+        model.zero_grad()
+        gen = model(inp)
+        loss = UNet.loss_func(gen, tar, params)
+        torch.cuda.nvtx.range_pop()
 
-      # automatic mixed precision:
-      #with amp.scale_loss(loss, optimizer) as scaled_loss:
-      #  scaled_loss.backward()
+        torch.cuda.nvtx.range_push("cosmo3D:backward step {}".format(iters))
+        loss.backward() # fixed precision
+        optimizer.step()
+        torch.cuda.nvtx.range_pop()
 
-      optimizer.step()
-      
-      tr_end = time.time()
-      tr_time += tr_end - tr_start
+        iters += 1
+        epoch_step += 1
+
+        # ste pdone
+        tr_end = time.time()
+        tr_time += tr_end - tr_start
 
 
-    # Output training stats
-    if world_rank==0:
+      # Output training stats
       log_start = time.time()
-      gens = []
-      tars = []
-      with torch.no_grad():
-        for i, data in enumerate(train_data_loader, 0):
-          if i>=16:
-            break
-          inp, tar = map(lambda x: x.to(device), data)
-          gen = model(inp)
-          gens.append(gen.detach().cpu().numpy())
-          tars.append(tar.detach().cpu().numpy())
-      gens = np.concatenate(gens, axis=0)
-      tars = np.concatenate(tars, axis=0)
+      if (params.validate == 1) and (world_rank == 0):
+        gens = []
+        tars = []
+        with torch.no_grad():
+          for i, data in enumerate(train_data_loader, 0):
+            if i>=16:
+              break
+            inp, tar = map(lambda x: x.to(device), data)
+            gen = model(inp)
+            gens.append(gen.detach().cpu().numpy())
+            tars.append(tar.detach().cpu().numpy())
+            gens = np.concatenate(gens, axis=0)
+            tars = np.concatenate(tars, axis=0)
 
-      # Scalars
-      #args.tboard_writer.add_scalar('G_loss', loss.item(), iters)
+        # Scalars
+        #args.tboard_writer.add_scalar('G_loss', loss.item(), iters)
 
-      # Plots
-      fig, chi, L1score = meanL1(gens, tars)
-      #args.tboard_writer.add_figure('pixhist', fig, iters, close=True)
-      #args.tboard_writer.add_scalar('Metrics/chi', chi, iters)
-      #args.tboard_writer.add_scalar('Metrics/rhoL1', L1score[0], iters)
-      #args.tboard_writer.add_scalar('Metrics/vxL1', L1score[1], iters)
-      #args.tboard_writer.add_scalar('Metrics/vyL1', L1score[2], iters)
-      #args.tboard_writer.add_scalar('Metrics/vzL1', L1score[3], iters)
-      #args.tboard_writer.add_scalar('Metrics/TL1', L1score[4], iters)
+        # Plots
+        fig, chi, L1score = meanL1(gens, tars)
+        #args.tboard_writer.add_figure('pixhist', fig, iters, close=True)
+        #args.tboard_writer.add_scalar('Metrics/chi', chi, iters)
+        #args.tboard_writer.add_scalar('Metrics/rhoL1', L1score[0], iters)
+        #args.tboard_writer.add_scalar('Metrics/vxL1', L1score[1], iters)
+        #args.tboard_writer.add_scalar('Metrics/vyL1', L1score[2], iters)
+        #args.tboard_writer.add_scalar('Metrics/vzL1', L1score[3], iters)
+        #args.tboard_writer.add_scalar('Metrics/TL1', L1score[4], iters)
       
-      fig = generate_images(inp.detach().cpu().numpy()[0], gens[-1], tars[-1])
-      #args.tboard_writer.add_figure('genimg', fig, iters, close=True)
+        fig = generate_images(inp.detach().cpu().numpy()[0], gens[-1], tars[-1])
+        #args.tboard_writer.add_figure('genimg', fig, iters, close=True)
+        
       log_end = time.time()
       log_time += log_end - log_start
 
       # Save checkpoint
-      torch.save({'iters': iters, 'epoch':epoch, 'model_state': model.state_dict(), 
-                  'optimizer_state_dict': optimizer.state_dict()}, params.checkpoint_path)
+      #torch.save({'iters': iters, 'epoch':epoch, 'model_state': model.state_dict(), 
+      #            'optimizer_state_dict': optimizer.state_dict()}, params.checkpoint_path)
     
-    end = time.time()
-    if world_rank==0:
+      end = time.time()
+      if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        logging.info('train step time={}, logging time={}'.format(tr_time, log_time))
-        logging.info('train samples/sec = {}'.format(i / tr_time))
+        logging.info('train step time = {} ({} steps), logging time = {}'.format(tr_time, epoch_step, log_time))
+        logging.info('train samples/sec = {}'.format(epoch_step / tr_time))
 
 
 

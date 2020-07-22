@@ -12,7 +12,7 @@
 
 # Start training
 export HDF5_USE_FILE_LOCKING=FALSE
-srun shifter python -m torch.distributed.launch --nproc_per_node=8 train.py --run_num=14 \
+srun shifter python -m torch.distributed.launch --nproc_per_node=8 train_amp.py --run_num=14 \
      --yaml_config=./config/UNet.yaml \
      --config=multi8
 

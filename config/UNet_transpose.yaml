@@ -16,6 +16,7 @@ default: &DEFAULT
   N_out_channels: 5
   batch_size: 1
   cpu_pipeline: 0
+  validate: 0
 
 multi8: 
   <<: *DEFAULT

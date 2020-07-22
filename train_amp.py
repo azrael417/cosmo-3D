@@ -76,10 +76,11 @@ def train(params, args, world_rank):
     start = time.time()
     tr_time = 0.
     log_time = 0.
+    epoch_step = 0
 
     for i, data in enumerate(train_data_loader, 0):
+      torch.cuda.nvtx.range_push("cosmo3D:forward step {}".format(iters))
       tr_start = time.time()
-      iters += 1
       adjust_LR(optimizer, params, iters)
       inp, tar = map(lambda x: x.to(device), data)
       b_size = inp.size(0)
@@ -89,18 +90,23 @@ def train(params, args, world_rank):
       with amp.autocast():
         gen = model(inp)
         loss = UNet.loss_func(gen, tar, params)
+      torch.cuda.nvtx.range_pop()
 
       # backward
+      torch.cuda.nvtx.range_push("cosmo3D:backward step {}".format(iters))
       gscaler.scale(loss).backward()
       gscaler.step(optimizer)
       gscaler.update()
+      torch.cuda.nvtx.range_pop()
       
       tr_end = time.time()
       tr_time += tr_end - tr_start
+      iters += 1
+      epoch_step += 1
 
 
     # Output training stats
-    if world_rank==0:
+    if (params.validate == 1) and (world_rank == 0):
       log_start = time.time()
       gens = []
       tars = []
@@ -140,8 +146,8 @@ def train(params, args, world_rank):
     end = time.time()
     if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        logging.info('train step time={}, logging time={}'.format(tr_time, log_time))
-        logging.info('train samples/sec = {}'.format(i / tr_time))
+        logging.info('train step time={} ({} steps), logging time={}'.format(tr_time, epoch_step, log_time))
+        logging.info('train samples/sec = {}'.format(epoch_step / tr_time))
 
 
 if __name__ == '__main__':
