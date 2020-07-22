@@ -1,0 +1,4 @@
+/global/common/cori_cle7/software/python/3.7-anaconda-2019.10/bin/python: Error while finding module specification for 'torch.distributed.launch' (ModuleNotFoundError: No module named 'torch')
+srun: error: cgpu13: task 0: Exited with exit code 1
+srun: Terminating job step 838713.0
+Wed Jul 22 11:25:07 PDT 2020

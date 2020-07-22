@@ -1,0 +1,378 @@
+Distributed computation initialized
+2020-07-22 19:53:35,344 - root - INFO - rank 3, begin data loader init
+Distributed computation initialized
+Distributed computation initialized
+2020-07-22 19:53:35,344 - root - INFO - rank 2, begin data loader init
+2020-07-22 19:53:35,345 - root - INFO - rank 1, begin data loader init
+Distributed computation initializedDistributed computation initialized
+
+2020-07-22 19:53:36,347 - root - INFO - rank 5, begin data loader init
+2020-07-22 19:53:36,347 - root - INFO - rank 4, begin data loader init
+Distributed computation initialized
+2020-07-22 19:53:36,348 - root - INFO - rank 6, begin data loader init
+Distributed computation initialized
+2020-07-22 19:53:36,350 - root - INFO - rank 7, begin data loader init
+Distributed computation initialized
+2020-07-22 19:53:36,356 - root - INFO - ------------------ Configuration ------------------
+2020-07-22 19:53:36,356 - root - INFO - Configuration file: /global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/config/UNet_transpose.yaml
+2020-07-22 19:53:36,356 - root - INFO - Configuration name: multi8
+2020-07-22 19:53:36,361 - root - INFO - ngpu 8
+2020-07-22 19:53:36,361 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-07-22 19:53:36,361 - root - INFO - lr 0.0001
+2020-07-22 19:53:36,361 - root - INFO - data_path /data/DDP_trdat_tra.h5
+2020-07-22 19:53:36,361 - root - INFO - transposed_input 1
+2020-07-22 19:53:36,361 - root - INFO - rotate_input 1
+2020-07-22 19:53:36,361 - root - INFO - Nsamples 20
+2020-07-22 19:53:36,361 - root - INFO - num_epochs 5
+2020-07-22 19:53:36,361 - root - INFO - num_data_workers 2
+2020-07-22 19:53:36,362 - root - INFO - LAMBDA_2 0.01
+2020-07-22 19:53:36,362 - root - INFO - data_size 256
+2020-07-22 19:53:36,362 - root - INFO - N_out_channels 5
+2020-07-22 19:53:36,362 - root - INFO - batch_size 1
+2020-07-22 19:53:36,362 - root - INFO - cpu_pipeline 0
+2020-07-22 19:53:36,362 - root - INFO - ---------------------------------------------------
+2020-07-22 19:53:36,362 - root - INFO - rank 0, begin data loader init
+Transposed InputTransposed InputTransposed InputTransposed Input
+
+
+
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Transposed InputTransposed InputTransposed Input
+
+
+Transposed Input
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+Use Zero Copy ES
+Enable Rotation
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/base_iterator.py:124: Warning: Please set `reader_name` and don't set last_batch_padded and size manually  whenever possible. This may lead, in some situations, to miss some  samples or return duplicated ones. Check the Sharding section of the documentation for more details.
+  _iterator_deprecation_warning()
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "train.py", line 193, in <module>
+    train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 214, in __init__
+    self.iterator = DALIGenericIterator([self.pipe], ['inp', 'tar'], self.length, auto_reset = True)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/plugin/pytorch.py", line 158, in __init__
+    p.schedule_run()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 631, in schedule_run
+    self._prefetch()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 727, in _prefetch
+    self._run_once()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 738, in _run_once
+    self._iter_setup()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 950, in _iter_setup
+    self._run_input_callbacks()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/pipeline.py", line 947, in _run_input_callbacks
+    group.call_and_feed(self, self._iter)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 75, in call_and_feed
+    callback_out = self.callback()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/nvidia/dali/external_source.py", line 113, in <lambda>
+    callback = lambda: next(iterator)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 134, in __next__
+    inp, tar = self.future.result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 435, in result
+    return self.__get_result()
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/_base.py", line 384, in __get_result
+    raise self._exception
+  File "/opt/python/cp37-cp37m/lib/python3.7/concurrent/futures/thread.py", line 57, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 123, in get_rand_slice
+    stream_htod.synchronize()
+NameError: name 'stream_htod' is not defined
+Traceback (most recent call last):
+  File "/opt/python/cp37-cp37m/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/python/cp37-cp37m/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/torch/distributed/launch.py", line 263, in <module>
+    main()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/torch/distributed/launch.py", line 259, in main
+    cmd=cmd)
+subprocess.CalledProcessError: Command '['/opt/python/cp37-cp37m/bin/python', '-u', 'train.py', '--local_rank=7', '--run_num=14', '--yaml_config=./config/UNet_transpose.yaml', '--config=multi8']' returned non-zero exit status 1.
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+srun: error: cgpu07: task 0: Exited with exit code 1
+srun: Terminating job step 838865.0
+Wed Jul 22 12:54:24 PDT 2020

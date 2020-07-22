@@ -1,0 +1,158 @@
+Distributed computation initialized
+Distributed computation initializedDistributed computation initialized
+
+Distributed computation initialized
+Distributed computation initialized
+Distributed computation initialized
+2020-07-22 19:43:47,900 - root - INFO - rank 7, begin data loader init
+2020-07-22 19:43:47,900 - root - INFO - rank 4, begin data loader init
+2020-07-22 19:43:47,900 - root - INFO - rank 5, begin data loader init
+2020-07-22 19:43:47,900 - root - INFO - rank 3, begin data loader init
+2020-07-22 19:43:47,900 - root - INFO - rank 1, begin data loader init
+2020-07-22 19:43:47,900 - root - INFO - rank 2, begin data loader init
+Distributed computation initialized
+2020-07-22 19:43:47,900 - root - INFO - rank 6, begin data loader init
+Distributed computation initialized
+2020-07-22 19:43:47,924 - root - INFO - ------------------ Configuration ------------------
+2020-07-22 19:43:47,924 - root - INFO - Configuration file: /global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/config/UNet.yaml
+2020-07-22 19:43:47,924 - root - INFO - Configuration name: multi8
+2020-07-22 19:43:47,928 - root - INFO - ngpu 8
+2020-07-22 19:43:47,929 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-07-22 19:43:47,929 - root - INFO - lr 0.0001
+2020-07-22 19:43:47,929 - root - INFO - data_path /data/DDP_trdat.h5
+2020-07-22 19:43:47,929 - root - INFO - num_epochs 4
+2020-07-22 19:43:47,929 - root - INFO - num_data_workers 2
+2020-07-22 19:43:47,929 - root - INFO - LAMBDA_2 0.01
+2020-07-22 19:43:47,929 - root - INFO - data_size 256
+2020-07-22 19:43:47,929 - root - INFO - N_out_channels 5
+2020-07-22 19:43:47,929 - root - INFO - batch_size 1
+2020-07-22 19:43:47,929 - root - INFO - ---------------------------------------------------
+2020-07-22 19:43:47,929 - root - INFO - rank 0, begin data loader init
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "train.py", line 190, in <module>
+  File "train.py", line 190, in <module>
+  File "train.py", line 190, in <module>
+  File "train.py", line 190, in <module>
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "train.py", line 190, in <module>
+  File "train.py", line 190, in <module>
+  File "train.py", line 190, in <module>
+    train(params, args, world_rank)
+          File "train.py", line 42, in train
+train(params, args, world_rank)train(params, args, world_rank)
+
+    train(params, args, world_rank)  File "train.py", line 42, in train
+
+  File "train.py", line 42, in train
+  File "train.py", line 42, in train
+Traceback (most recent call last):
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+      File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+  File "train.py", line 190, in <module>
+train(params, args, world_rank)
+  File "train.py", line 42, in train
+    train(params, args, world_rank)    
+train_data_loader = get_data_loader_distributed(params, world_rank)    
+train(params, args, world_rank)      File "train.py", line 42, in train
+    
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+train_data_loader = get_data_loader_distributed(params, world_rank)train_data_loader = get_data_loader_distributed(params, world_rank)
+
+  File "train.py", line 42, in train
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+    train_data_loader = get_data_loader_distributed(params, world_rank)    
+train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+        train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+      File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+train(params, args, world_rank)
+  File "train.py", line 42, in train
+    self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+      File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+train_data_loader = get_data_loader_distributed(params, world_rank)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 23, in get_data_loader_distributed
+    self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+    dii = DaliInputIterator(params, device_id)
+    self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+    
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+    train_loader = RandomCropDataLoader(params, num_workers=params.num_data_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 211, in __init__
+    self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+    self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+    dii = DaliInputIterator(params, device_id)
+    self.Nsamples = params.Nsamples  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+
+    AttributeErrordii = DaliInputIterator(params, device_id)
+: 'YParams' object has no attribute 'Nsamples'  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+
+    dii = DaliInputIterator(params, device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+    dii = DaliInputIterator(params, device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+    dii = DaliInputIterator(params, device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+    self.Nsamples = params.Nsamples
+    self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)AttributeError    
+self.Nsamples = params.Nsamples: 
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+'YParams' object has no attribute 'Nsamples'
+AttributeError    :     self.pipe = DaliPipeline(params, num_threads=num_workers, device_id=device_id)'YParams' object has no attribute 'Nsamples'self.Nsamples = params.Nsamples
+
+
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 153, in __init__
+AttributeError: 'YParams' object has no attribute 'Nsamples'
+    self.Nsamples = params.Nsamples
+AttributeError: 'YParams' object has no attribute 'Nsamples'
+    dii = DaliInputIterator(params, device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+    self.Nsamples = params.Nsamples
+    dii = DaliInputIterator(params, device_id)
+  File "/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/data_loader_dali_cupy.py", line 54, in __init__
+AttributeError: 'YParams' object has no attribute 'Nsamples'
+    self.Nsamples = params.Nsamples
+    AttributeErrorself.Nsamples = params.Nsamples: 
+'YParams' object has no attribute 'Nsamples'
+AttributeError: 'YParams' object has no attribute 'Nsamples'
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+Traceback (most recent call last):
+  File "/opt/python/cp37-cp37m/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/opt/python/cp37-cp37m/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/torch/distributed/launch.py", line 263, in <module>
+    main()
+  File "/opt/python/cp37-cp37m/lib/python3.7/site-packages/torch/distributed/launch.py", line 259, in main
+    cmd=cmd)
+subprocess.CalledProcessError: Command '['/opt/python/cp37-cp37m/bin/python', '-u', 'train.py', '--local_rank=7', '--run_num=14', '--config=multi8']' returned non-zero exit status 1.
+srun: error: cgpu03: task 0: Exited with exit code 1
+srun: Terminating job step 838844.0
+Wed Jul 22 12:44:53 PDT 2020

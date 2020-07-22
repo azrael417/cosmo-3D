@@ -1,0 +1,110 @@
+Distributed computation initialized
+2020-07-22 20:04:39,868 - root - INFO - rank 3, begin data loader init
+Distributed computation initializedDistributed computation initializedDistributed computation initialized
+
+Distributed computation initialized
+
+2020-07-22 20:04:40,872 - root - INFO - rank 5, begin data loader init
+2020-07-22 20:04:40,872 - root - INFO - rank 1, begin data loader init
+2020-07-22 20:04:40,872 - root - INFO - rank 7, begin data loader init
+Distributed computation initialized
+2020-07-22 20:04:40,872 - root - INFO - rank 4, begin data loader init
+2020-07-22 20:04:40,872 - root - INFO - rank 6, begin data loader init
+Distributed computation initialized
+2020-07-22 20:04:40,873 - root - INFO - rank 2, begin data loader init
+Distributed computation initialized
+2020-07-22 20:04:40,881 - root - INFO - ------------------ Configuration ------------------
+2020-07-22 20:04:40,882 - root - INFO - Configuration file: /global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/config/UNet.yaml
+2020-07-22 20:04:40,882 - root - INFO - Configuration name: multi8
+2020-07-22 20:04:40,886 - root - INFO - ngpu 8
+2020-07-22 20:04:40,886 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-07-22 20:04:40,886 - root - INFO - lr 0.0001
+2020-07-22 20:04:40,886 - root - INFO - data_path /data/DDP_trdat.h5
+2020-07-22 20:04:40,886 - root - INFO - num_epochs 4
+2020-07-22 20:04:40,886 - root - INFO - num_data_workers 2
+2020-07-22 20:04:40,886 - root - INFO - LAMBDA_2 0.01
+2020-07-22 20:04:40,887 - root - INFO - data_size 256
+2020-07-22 20:04:40,887 - root - INFO - N_out_channels 5
+2020-07-22 20:04:40,887 - root - INFO - batch_size 1
+2020-07-22 20:04:40,887 - root - INFO - ---------------------------------------------------
+2020-07-22 20:04:40,887 - root - INFO - rank 0, begin data loader init
+2020-07-22 20:10:32,839 - root - INFO - rank 2, data loader initialized
+2020-07-22 20:10:32,840 - root - INFO - rank 5, data loader initialized
+2020-07-22 20:10:32,842 - root - INFO - rank 1, data loader initialized
+2020-07-22 20:10:32,845 - root - INFO - rank 6, data loader initialized
+2020-07-22 20:10:32,849 - root - INFO - rank 7, data loader initialized
+2020-07-22 20:10:32,854 - root - INFO - rank 3, data loader initialized
+2020-07-22 20:10:33,527 - root - INFO - rank 4, data loader initialized
+2020-07-22 20:10:34,169 - root - INFO - rank 0, data loader initialized
+2020-07-22 20:10:40,971 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+  )
+)
+2020-07-22 20:10:40,974 - root - INFO - Starting Training Loop...
+2020-07-22 20:17:02,689 - root - INFO - Time taken for epoch 1 is 381.7140636444092 sec
+2020-07-22 20:17:02,689 - root - INFO - train step time=228.52021503448486, logging time=90.3561749458313
+2020-07-22 20:19:10,225 - root - INFO - Time taken for epoch 2 is 127.53604316711426 sec
+2020-07-22 20:19:10,225 - root - INFO - train step time=26.49809432029724, logging time=81.42310810089111
+2020-07-22 20:21:07,868 - root - INFO - Time taken for epoch 3 is 117.64268350601196 sec
+2020-07-22 20:21:07,868 - root - INFO - train step time=25.900352954864502, logging time=77.88842248916626
+2020-07-22 20:21:45,934 - root - INFO - DONE ---- rank 2
+2020-07-22 20:21:46,326 - root - INFO - DONE ---- rank 3
+2020-07-22 20:21:46,338 - root - INFO - DONE ---- rank 7
+2020-07-22 20:21:46,690 - root - INFO - DONE ---- rank 4
+2020-07-22 20:21:46,708 - root - INFO - DONE ---- rank 6
+2020-07-22 20:21:47,450 - root - INFO - DONE ---- rank 5
+2020-07-22 20:21:47,510 - root - INFO - DONE ---- rank 1
+/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/plotting.py:49: RuntimeWarning: divide by zero encountered in true_divide
+  (prediction - tar), prediction, (prediction - tar)/tar]
+2020-07-22 20:22:57,372 - root - INFO - Time taken for epoch 4 is 109.50364589691162 sec
+2020-07-22 20:22:57,372 - root - INFO - train step time=23.725386381149292, logging time=74.75448393821716
+2020-07-22 20:23:01,146 - root - INFO - DONE ---- rank 0
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+Wed Jul 22 13:23:03 PDT 2020

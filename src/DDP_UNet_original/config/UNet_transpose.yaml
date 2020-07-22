@@ -1,0 +1,23 @@
+default: &DEFAULT
+
+  weight_init: {conv_init: 'normal', conv_scale: 0.02, conv_bias: 0.}
+
+  lr: 1E-4
+
+  data_path: '/data/DDP_trdat_tra.h5'
+  transposed_input: 1
+  rotate_input: 1
+  ngpu: 1
+  Nsamples: 20
+  num_epochs: 5
+  num_data_workers: 2
+  LAMBDA_2: 1E-2
+  data_size: 256
+  N_out_channels: 5
+  batch_size: 1
+  cpu_pipeline: 0
+  validate: 0
+
+multi8: 
+  <<: *DEFAULT
+  ngpu: 8

@@ -1,0 +1,25 @@
+2020-07-22 18:44:05,208 - root - INFO - rank 3, begin data loader init
+2020-07-22 18:44:05,209 - root - INFO - rank 5, begin data loader init
+2020-07-22 18:44:05,210 - root - INFO - rank 4, begin data loader init
+2020-07-22 18:44:05,210 - root - INFO - rank 2, begin data loader init
+2020-07-22 18:44:05,210 - root - INFO - rank 6, begin data loader init
+2020-07-22 18:44:06,212 - root - INFO - rank 1, begin data loader init
+2020-07-22 18:44:06,212 - root - INFO - rank 7, begin data loader init
+2020-07-22 18:44:06,227 - root - INFO - ------------------ Configuration ------------------
+2020-07-22 18:44:06,227 - root - INFO - Configuration file: /global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/config/UNet.yaml
+2020-07-22 18:44:06,227 - root - INFO - Configuration name: multi8
+2020-07-22 18:44:06,233 - root - INFO - ngpu 8
+2020-07-22 18:44:06,233 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-07-22 18:44:06,233 - root - INFO - lr 0.0001
+2020-07-22 18:44:06,233 - root - INFO - data_path /data/DDP_trdat.h5
+2020-07-22 18:44:06,233 - root - INFO - num_epochs 2
+2020-07-22 18:44:06,233 - root - INFO - num_data_workers 2
+2020-07-22 18:44:06,233 - root - INFO - LAMBDA_2 0.01
+2020-07-22 18:44:06,233 - root - INFO - data_size 256
+2020-07-22 18:44:06,233 - root - INFO - N_out_channels 5
+2020-07-22 18:44:06,233 - root - INFO - batch_size 1
+2020-07-22 18:44:06,233 - root - INFO - ---------------------------------------------------
+2020-07-22 18:44:06,233 - root - INFO - rank 0, begin data loader init
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 838750 ON cgpu13 CANCELLED AT 2020-07-22T11:48:28 ***
+slurmstepd: error: *** STEP 838750.0 ON cgpu13 CANCELLED AT 2020-07-22T11:48:28 ***

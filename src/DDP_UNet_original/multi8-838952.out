@@ -1,0 +1,103 @@
+Distributed computation initialized
+2020-07-22 20:44:59,700 - root - INFO - rank 1, begin data loader init
+Distributed computation initialized
+2020-07-22 20:44:59,701 - root - INFO - rank 6, begin data loader init
+Distributed computation initialized
+Distributed computation initialized
+2020-07-22 20:44:59,702 - root - INFO - rank 3, begin data loader init
+Distributed computation initialized
+2020-07-22 20:44:59,702 - root - INFO - rank 7, begin data loader init
+2020-07-22 20:44:59,702 - root - INFO - rank 4, begin data loader init
+Distributed computation initialized
+2020-07-22 20:45:00,708 - root - INFO - rank 5, begin data loader init
+Distributed computation initialized
+Distributed computation initialized
+2020-07-22 20:45:00,709 - root - INFO - rank 2, begin data loader init
+2020-07-22 20:45:00,709 - root - INFO - ------------------ Configuration ------------------
+2020-07-22 20:45:00,709 - root - INFO - Configuration file: /global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/config/UNet.yaml
+2020-07-22 20:45:00,709 - root - INFO - Configuration name: multi8
+2020-07-22 20:45:00,713 - root - INFO - ngpu 8
+2020-07-22 20:45:00,714 - root - INFO - weight_init ordereddict([('conv_init', 'normal'), ('conv_scale', 0.02), ('conv_bias', 0.0)])
+2020-07-22 20:45:00,718 - root - INFO - lr 0.0001
+2020-07-22 20:45:00,718 - root - INFO - data_path /data/DDP_trdat.h5
+2020-07-22 20:45:00,718 - root - INFO - num_epochs 4
+2020-07-22 20:45:00,718 - root - INFO - num_data_workers 2
+2020-07-22 20:45:00,718 - root - INFO - LAMBDA_2 0.01
+2020-07-22 20:45:00,718 - root - INFO - data_size 256
+2020-07-22 20:45:00,718 - root - INFO - N_out_channels 5
+2020-07-22 20:45:00,718 - root - INFO - batch_size 1
+2020-07-22 20:45:00,718 - root - INFO - ---------------------------------------------------
+2020-07-22 20:45:00,718 - root - INFO - rank 0, begin data loader init
+2020-07-22 20:50:45,390 - root - INFO - rank 5, data loader initialized
+2020-07-22 20:50:45,394 - root - INFO - rank 4, data loader initialized
+2020-07-22 20:50:45,397 - root - INFO - rank 3, data loader initialized
+2020-07-22 20:50:45,399 - root - INFO - rank 7, data loader initialized
+2020-07-22 20:50:45,603 - root - INFO - rank 1, data loader initialized
+2020-07-22 20:50:46,156 - root - INFO - rank 0, data loader initialized
+2020-07-22 20:50:46,201 - root - INFO - rank 6, data loader initialized
+2020-07-22 20:50:46,238 - root - INFO - rank 2, data loader initialized
+2020-07-22 20:50:53,512 - root - INFO - Loading checkpoint /global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/expts/multi8/14/training_checkpoints/ckpt.tar
+2020-07-22 20:50:54,712 - root - INFO - DistributedDataParallel(
+  (module): UNet(
+    (conv_down1): Sequential(
+      (0): Conv3d(4, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down2): Sequential(
+      (0): Conv3d(64, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down3): Sequential(
+      (0): Conv3d(128, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down4): Sequential(
+      (0): Conv3d(256, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down5): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_down6): Sequential(
+      (0): Conv3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+    (conv_up6): Sequential(
+      (0): ConvTranspose3d(512, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up5): Sequential(
+      (0): ConvTranspose3d(1024, 512, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up4): Sequential(
+      (0): ConvTranspose3d(1024, 256, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up3): Sequential(
+      (0): ConvTranspose3d(512, 128, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_up2): Sequential(
+      (0): ConvTranspose3d(256, 64, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+      (1): ReLU(inplace=True)
+    )
+    (conv_last): ConvTranspose3d(128, 5, kernel_size=(4, 4, 4), stride=(2, 2, 2), padding=(1, 1, 1))
+  )
+)
+2020-07-22 20:50:54,714 - root - INFO - Starting Training Loop...
+/global/cfs/cdirs/dasrepo/tkurth/DataScience/cosmo-3D/src/DDP_UNet_original/utils/plotting.py:49: RuntimeWarning: divide by zero encountered in true_divide
+  (prediction - tar), prediction, (prediction - tar)/tar]
+2020-07-22 20:57:22,841 - root - INFO - Time taken for epoch 2 is 388.1275198459625 sec
+2020-07-22 20:57:22,842 - root - INFO - train step time=166.96768140792847, logging time=108.34808611869812
+2020-07-22 20:57:22,842 - root - INFO - train samples/sec = 0.09582692809220647
+2020-07-22 20:59:41,989 - root - INFO - Time taken for epoch 3 is 139.14716958999634 sec
+2020-07-22 20:59:41,989 - root - INFO - train step time=38.86797308921814, logging time=83.71707129478455
+2020-07-22 20:59:41,989 - root - INFO - train samples/sec = 0.411649971128501
+2020-07-22 21:01:54,504 - root - INFO - Time taken for epoch 4 is 132.5143129825592 sec
+2020-07-22 21:01:54,504 - root - INFO - train step time=32.639824628829956, logging time=84.47513818740845
+2020-07-22 21:01:54,504 - root - INFO - train samples/sec = 0.49019871221573885
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 838952 ON cgpu07 CANCELLED AT 2020-07-22T14:01:55 ***
+slurmstepd: error: *** STEP 838952.0 ON cgpu07 CANCELLED AT 2020-07-22T14:01:55 ***
