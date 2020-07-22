@@ -13,12 +13,14 @@ from apex import amp, optimizers
 from apex.parallel import DistributedDataParallel
 #from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.multiprocessing
+import torch.cuda.amp as amp
 
 import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
-from utils.data_loader_dali_cupy_opt import get_data_loader_distributed
+from utils.data_loader import get_data_loader_distributed
+#from utils.data_loader_dali_cupy_opt import get_data_loader_distributed
 from utils.plotting import generate_images, meanL1
 from networks import UNet
 
@@ -50,6 +52,9 @@ def train(params, args, world_rank):
   if params.distributed:
     model = DistributedDataParallel(model) 
 
+  # gscaler
+  gscaler = amp.GradScaler()
+    
   iters = 0
   startEpoch = 0
   checkpoint = None
@@ -78,18 +83,17 @@ def train(params, args, world_rank):
       adjust_LR(optimizer, params, iters)
       inp, tar = map(lambda x: x.to(device), data)
       b_size = inp.size(0)
-      
+
+      # forward
       model.zero_grad()
-      gen = model(inp)
-      loss = UNet.loss_func(gen, tar, params)
-      
-      loss.backward() # fixed precision
+      with amp.autocast():
+        gen = model(inp)
+        loss = UNet.loss_func(gen, tar, params)
 
-      # automatic mixed precision:
-      #with amp.scale_loss(loss, optimizer) as scaled_loss:
-      #  scaled_loss.backward()
-
-      optimizer.step()
+      # backward
+      gscaler.scale(loss).backward()
+      gscaler.step(optimizer)
+      gscaler.update()
       
       tr_end = time.time()
       tr_time += tr_end - tr_start
@@ -138,7 +142,6 @@ def train(params, args, world_rank):
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
         logging.info('train step time={}, logging time={}'.format(tr_time, log_time))
         logging.info('train samples/sec = {}'.format(i / tr_time))
-
 
 
 if __name__ == '__main__':
