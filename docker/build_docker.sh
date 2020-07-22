@@ -6,14 +6,14 @@ tag="new_scaler"
 cd ..
 
 ## Base
-#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.deps \
+#docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.deps \
 #	      --build-arg PYVER=3.7 \
 #	      --build-arg PYV=37 \
 #	      -f docker/Dockerfile.deps.ubuntu .
 #exit
 
 ## pytorch
-#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.pytorch:${tag} \
+#docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.pytorch:${tag} \
 #	      --build-arg TAG=${tag} \
 #	      --build-arg PYVER=3.7 \
 #	      --build-arg PYV=37 \
@@ -21,7 +21,7 @@ cd ..
 #exit
 
 ## dali
-#nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.dali:${tag} \
+#docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo.dali:${tag} \
 #	      --build-arg TAG=${tag} \
 #	      --build-arg PYVER=3.7 \
 #	      --build-arg PYV=37 \
@@ -30,7 +30,7 @@ cd ..
 
 # cosmo 3d
 for tg in old_scaler new_scaler; do
-    nvidia-docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo:${tg} \
+    docker build -t registry.services.nersc.gov/tkurth/pytorch-cosmo:${tg} \
 		  --build-arg TAG=${tg} \
 		  -f docker/Dockerfile .
 done

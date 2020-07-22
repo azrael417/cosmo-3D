@@ -1,0 +1,10 @@
+#!/bin/bash -l
+
+# Start training
+export HDF5_USE_FILE_LOCKING=FALSE
+python -m torch.distributed.launch --nproc_per_node=8 train_amp.py --run_num=14 \
+     --yaml_config=./config/UNet.yaml \
+     --config=multi8
+
+date
+
