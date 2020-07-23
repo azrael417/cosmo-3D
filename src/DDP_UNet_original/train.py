@@ -38,6 +38,9 @@ def adjust_LR(optimizer, params, iternum):
 
 
 def train(params, args, world_rank):
+  # set device
+  device = torch.device("cuda:{}".format(args.local_rank))
+  
   logging.info('rank %d, begin data loader init'%world_rank)
   train_data_loader = get_data_loader_distributed(params, world_rank)
   logging.info('rank %d, data loader initialized'%world_rank)
@@ -49,7 +52,7 @@ def train(params, args, world_rank):
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
     #model = DDP(model)
-    model = DDP(model, device_ids = [args.local_rank], output_device = args.local_rank)
+    model = DDP(model, device_ids = [device.index], output_device = device.index)
     
 
   iters = 0
@@ -58,7 +61,7 @@ def train(params, args, world_rank):
   if args.resuming:
     if world_rank==0:
       logging.info("Loading checkpoint %s"%params.checkpoint_path)
-    checkpoint = torch.load(params.checkpoint_path, map_location='cuda:{}'.format(args.local_rank))
+    checkpoint = torch.load(params.checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint['model_state'])
     iters = checkpoint['iters']
     startEpoch = checkpoint['epoch'] + 1
@@ -68,7 +71,7 @@ def train(params, args, world_rank):
     logging.info(model)
     logging.info("Starting Training Loop...")
 
-  device = torch.cuda.current_device()
+    
   with torch.autograd.profiler.emit_nvtx():
     for epoch in range(startEpoch, startEpoch+params.num_epochs):
       start = time.time()
