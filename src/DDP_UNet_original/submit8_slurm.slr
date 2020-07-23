@@ -1,5 +1,6 @@
 #!/bin/bash -l
-#SBATCH --nodes=1  --time=00:30:00  
+#SBATCH --nodes=1  --time=00:30:00
+#SBATCH -q special
 #SBATCH -C gpu 
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
