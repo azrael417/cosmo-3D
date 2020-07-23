@@ -10,9 +10,12 @@
 #SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:new_scaler
 #SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
 
+#profilecmd="/usr/local/cuda/bin/nsys profile --stats=true --mpi-impl=openmpi --trace=cuda,cublas,nvtx,osrt,mpi -f true -o /data/profiles/profile_orig"
+profilecmd="/usr/local/cuda/bin/nvprof --profile-child-processes -o /data/profiles/profile_orig_rank%p"
+
 # Start training
 export HDF5_USE_FILE_LOCKING=FALSE
-srun shifter python -m torch.distributed.launch --nproc_per_node=8 train.py --run_num=14 \
+srun shifter ${profilecmd} /opt/python/cp37-cp37m/bin/python -m torch.distributed.launch --nproc_per_node=8 train.py --run_num=14 \
      --yaml_config=./config/UNet.yaml \
      --config=multi8
 

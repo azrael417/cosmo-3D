@@ -11,14 +11,15 @@ import torch.optim as optim
 from apex import optimizers
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
-import torch.cuda.amp as amp
+#import torch.cuda.amp as amp
 
 import logging
 from utils import logging_utils
 logging_utils.config_logger()
 from utils.YParams import YParams
 #from utils.data_loader_dali_lowmem import get_data_loader_distributed
-from utils.data_loader_dali import get_data_loader_distributed
+from utils.data_loader import get_data_loader_distributed
+#from utils.data_loader_dali import get_data_loader_distributed
 #from utils.data_loader_dali_dummy import get_data_loader_distributed
 from utils.plotting import generate_images, meanL1
 from networks import UNet
@@ -60,7 +61,7 @@ def train(params, args, world_rank, local_rank):
     model = DDP(model, device_ids=[local_rank])
 
   # amp stuff
-  gscaler = amp.GradScaler()
+  #gscaler = amp.GradScaler()
     
   iters = 0
   startEpoch = 0
@@ -92,23 +93,25 @@ def train(params, args, world_rank, local_rank):
       iters += 1
 
       #adjust_LR(optimizer, params, iters)
-      inp, tar = data
+      inp, tar = map(lambda x: x.to(device), data)
 
       if not args.io_only:
 
         # fw pass
         fw_time -= time.time()
         optimizer.zero_grad()
-        with amp.autocast():
-          gen = model(inp)
-          loss = UNet.loss_func(gen, tar, params)
+        #with amp.autocast():
+        gen = model(inp)
+        loss = UNet.loss_func(gen, tar, params)
         fw_time += time.time()
 
         # bw pass
         bw_time -= time.time()
-        gscaler.scale(loss).backward()
-        gscaler.step(optimizer)
-        gscaler.update()
+        loss.backward()
+        optimizer.step()
+        #gscaler.scale(loss).backward()
+        #gscaler.step(optimizer)
+        #gscaler.update()
         bw_time += time.time()
       
       nsteps += 1
@@ -209,6 +212,9 @@ if __name__ == '__main__':
   dist.init_process_group(backend = "nccl",
                         rank = comm_rank,
                         world_size = comm_size)
+
+  # set device here to avoid unnecessary surprises
+  torch.cuda.set_device(comm_local_rank)
 
   #torch.backends.cudnn.benchmark = True
   args.resuming = False

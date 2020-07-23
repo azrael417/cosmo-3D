@@ -10,6 +10,7 @@ import torch.optim as optim
 #from torch.utils.tensorboard import SummaryWriter
 from apex import optimizers
 import torch.distributed as dist
+#from apex.parallel import DistributedDataParallel as DDP
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.cuda.amp as amp
 
@@ -62,6 +63,7 @@ def train(params, args, world_rank, local_rank):
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
     model = DDP(model, device_ids=[device.index])
+    #model = DDP(model)
 
   # loss
   criterion = UNet.CosmoLoss(params.LAMBDA_2)

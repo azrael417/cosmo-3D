@@ -12,6 +12,7 @@ import torch.optim as optim
 from apex import amp, optimizers
 #from apex.parallel import DistributedDataParallel as DDP
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
 import torch.multiprocessing
 
 import logging
@@ -154,28 +155,42 @@ if __name__ == '__main__':
   parser.add_argument("--local_rank", default=0, type=int)
   parser.add_argument("--run_num", default='00', type=str)
   parser.add_argument("--yaml_config", default='./config/UNet.yaml', type=str)
+  parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   parser.add_argument("--config", default='default', type=str)
+  
   args = parser.parse_args()
   
   run_num = args.run_num
 
   params = YParams(os.path.abspath(args.yaml_config), args.config)
 
-  params.distributed = False
-  if 'WORLD_SIZE' in os.environ:
-    params.distributed = int(os.environ['WORLD_SIZE']) > 1
 
-  # some dali stuff
-  params.no_copy = True
+  # get env variables
+  params.distributed = True
+  if (args.comm_mode == "openmpi-nccl"):
+    #use pmix server address: only works for single node
+    addrport = os.getenv("PMIX_SERVER_URI2").split("//")[1]
+    comm_addr = addrport.split(":")[0]
+    comm_rank = int(os.getenv('OMPI_COMM_WORLD_RANK',0))
+    comm_size = int(os.getenv("OMPI_COMM_WORLD_SIZE",0))
+  elif (args.comm_mode == "slurm-nccl"):
+    comm_addr=os.getenv("SLURM_SRUN_COMM_HOST")
+    comm_size = int(os.getenv("SLURM_NTASKS"))
+    comm_rank = int(os.getenv("PMI_RANK"))
+  
+  # common stuff
+  comm_local_rank = comm_rank % torch.cuda.device_count()
+  comm_port = "29500"
+  os.environ["MASTER_ADDR"] = comm_addr
+  os.environ["MASTER_PORT"] = comm_port
 
-  world_rank = 0
-  if params.distributed:
-    torch.cuda.set_device(args.local_rank)
-    torch.distributed.init_process_group(backend='nccl',
-                                         init_method='env://')
-    args.gpu = args.local_rank
-    world_rank = torch.distributed.get_rank()
-    print("Distributed computation initialized")
+  # init process group
+  dist.init_process_group(backend = "nccl",
+                        rank = comm_rank,
+                        world_size = comm_size)
+
+  # set device here to avoid unnecessary surprises
+  torch.cuda.set_device(comm_local_rank)
 
   torch.backends.cudnn.benchmark = True
 
@@ -184,7 +199,7 @@ if __name__ == '__main__':
   # Set up directory
   baseDir = './expts/'
   expDir = os.path.join(baseDir, args.config+'/'+str(run_num)+'/')
-  if  world_rank==0:
+  if  comm_rank == 0:
     if not os.path.isdir(expDir):
       os.makedirs(expDir, exist_ok = True)
       os.makedirs(expDir+'training_checkpoints/', exist_ok = True)
@@ -198,9 +213,9 @@ if __name__ == '__main__':
   if os.path.isfile(params.checkpoint_path):
     args.resuming=True
 
-  train(params, args, world_rank)
+  train(params, args, comm_rank)
   #if world_rank == 0:
   #  args.tboard_writer.flush()
   #  args.tboard_writer.close()
-  logging.info('DONE ---- rank %d'%world_rank)
+  logging.info('DONE ---- rank %d'%comm_rank)
 

@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --nodes=2  --time=00:10:00  
+#SBATCH --nodes=1  --time=00:30:00  
 #SBATCH -C gpu 
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
@@ -13,7 +13,9 @@ export HDF5_USE_FILE_LOCKING=FALSE
 nodes=$(scontrol show hostnames $SLURM_JOB_NODELIST) # Getting the node names
 nodes_array=( $nodes )
 master_node=${nodes_array[0]}
-master_addr=$(srun --nodes=1 --ntasks=1 -w $master_node hostname --ip-address)
+master_addr=$(srun --nodes=1 --ntasks=1 -w ${master_node} hostname --ip-address)
+
+export OMP_NUM_THREADS=1
 
 worker_num=$(($SLURM_JOB_NUM_NODES - 1))
 for ((  i=0; i<=$worker_num; i++ ))

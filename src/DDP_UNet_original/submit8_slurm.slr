@@ -1,0 +1,30 @@
+#!/bin/bash -l
+#SBATCH --nodes=1  --time=00:30:00  
+#SBATCH -C gpu 
+#SBATCH --account m1759
+#SBATCH --gres=gpu:8
+#SBATCH --exclusive
+#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:new_scaler
+#SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
+
+export HDF5_USE_FILE_LOCKING=FALSE
+
+# get master addr
+nodes=$(scontrol show hostnames $SLURM_JOB_NODELIST) # Getting the node names
+nodes_array=( $nodes )
+master_node=${nodes_array[0]}
+export MASTER_PORT=29500
+export MASTER_ADDR=$(srun --nodes=1 --ntasks=1 -w ${master_node} hostname --ip-address)
+
+# other params
+rankspernode=8
+totalranks=$(( ${SLURM_NNODES} * ${rankspernode} ))
+export OMP_NUM_THREADS=1
+
+#srun
+srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
+     shifter /opt/python/cp37-cp37m/bin/python train_mpi_wireup.py \
+     --yaml_config "config/UNet.yaml"
+
+date
+

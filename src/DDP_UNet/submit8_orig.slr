@@ -5,12 +5,13 @@
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
 #SBATCH --exclusive
-#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:latest
+#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:new_scaler
 #SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
 
-#number of ranks
+#number of ranks and threads
 rankspernode=8
 totalranks=$(( ${rankspernode} * ${SLURM_NNODES} ))
+export OMP_NUM_THREADS=1
 
 #hdf file locking 
 export HDF5_USE_FILE_LOCKING=FALSE
@@ -19,7 +20,6 @@ export HDF5_USE_FILE_LOCKING=FALSE
 mkdir -p /dev/shm/numa0 /dev/shm/numa1
 
 #srun
-srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
+srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=sockets \
      shifter /opt/python/cp37-cp37m/bin/python train_orig.py \
-     --yaml_config "config/UNet.yaml" \
-     --enable_amp
+     --yaml_config "config/UNet.yaml"

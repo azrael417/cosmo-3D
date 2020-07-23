@@ -1,5 +1,6 @@
 #!/bin/bash -l
-#SBATCH --nodes=2  --time=04:00:00  
+#SBATCH --nodes=1
+#SBATCH --time=04:00:00
 #SBATCH -C gpu 
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
@@ -11,11 +12,11 @@ module load pytorch/v1.4.0-gpu
 module list
 export HDF5_USE_FILE_LOCKING=FALSE
 
-nodes=$(scontrol show hostnames $SLURM_JOB_NODELIST) # Getting the node names
-nodes_array=( $nodes )
-worker_num=$(($SLURM_JOB_NUM_NODES - 1))
+#nodes=$(scontrol show hostnames $SLURM_JOB_NODELIST) # Getting the node names
+#nodes_array=( $nodes )
+#worker_num=$(($SLURM_JOB_NUM_NODES - 1))
 
-master_node=${nodes_array[0]}
+#master_node=${nodes_array[0]}
 
 #for ((  i=0; i<=$worker_num; i++ ))
 #do
@@ -27,7 +28,7 @@ master_node=${nodes_array[0]}
 
 rankspernode=8
 srun -u -N ${SLURM_NNODES} -n $(( ${SLURM_NNODES} * ${rankspernode} ))  -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
-     python train.py --run_num=13
+     python train.py --yaml_config config/UNet_native.yaml --run_num=13
 
 ## Wait for completion
 #for pid in ${pids[*]}; do

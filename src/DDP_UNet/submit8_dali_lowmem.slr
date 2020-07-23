@@ -5,7 +5,7 @@
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
 #SBATCH --exclusive
-#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:new_scaler
+#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:latest
 #SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
 
 #number of ranks
@@ -20,6 +20,6 @@ mkdir -p /dev/shm/numa0 /dev/shm/numa1
 
 #srun
 srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
-     shifter /opt/python/cp37-cp37m/bin/python train_dali_cupy.py \
+     shifter /opt/python/cp37-cp37m/bin/python train_dali_lowmem.py \
      --yaml_config "config/UNet_transpose.yaml" \
-     --enable_amp --no_copy
+     --stage_target "nvme"

@@ -41,7 +41,7 @@ def adjust_LR(optimizer, params, iternum):
 def train(params, args, world_rank, local_rank):
 
   # set device
-  device = torch.device("cuda:{}".format(local_rank))
+  device = torch.device("cuda:{}".format(local_rank))  
   
   #logging info
   logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, local_rank))
@@ -57,7 +57,7 @@ def train(params, args, world_rank, local_rank):
   optimizer = optimizers.FusedAdam(model.parameters(), lr = params.lr)
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
-    model = DDP(model, device_ids=[device.index])
+    model = DDP(model, device_ids=[device.index], output_device=device.index)
 
   # loss
   criterion = UNet.CosmoLoss(params.LAMBDA_2)
