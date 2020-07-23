@@ -14,6 +14,9 @@ RUN pip install h5py ruamel.yaml matplotlib zarr
 #create /data mount point
 RUN mkdir -p /data /tmp/numa0 /tmp/numa1
 
+#install numactl
+RUN apt install -y libnuma-dev numactl
+
 # copy source code to op
 COPY src/DDP_UNet /opt/DDP_UNet
 COPY src/DDP_UNet_original /opt/DDP_UNet_original

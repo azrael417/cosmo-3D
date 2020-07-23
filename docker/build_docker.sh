@@ -34,7 +34,7 @@ for tg in old_scaler new_scaler; do
 		  --build-arg TAG=${tg} \
 		  -f docker/Dockerfile .
 done
-docker push registry.services.nersc.gov/tkurth/pytorch-cosmo:${tag}
+#docker push registry.services.nersc.gov/tkurth/pytorch-cosmo:${tag}
 
 #run docker test
 #docker run --device=/dev/nvidia-fs0 --workdir "/opt/pytorch/numpy_reader/scripts" -it tkurth/pytorch-numpy_reader:latest ./reader_test.sh

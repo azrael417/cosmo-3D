@@ -32,4 +32,4 @@ nvidia-docker run \
 	      --volume "/raid5/data/tkurth:/data5:rw" \
 	      --volume "/raid7/data/tkurth:/data7:rw" \
 	      --volume "/mnt/weka/tkurth/cosmo_data:/data:rw" \
-	      --workdir "/opt/DDP_UNet" -it registry.services.nersc.gov/tkurth/pytorch-cosmo:${tag} /bin/bash
+	      --workdir "/opt/DDP_UNet_original" -it registry.services.nersc.gov/tkurth/pytorch-cosmo:${tag} /bin/bash

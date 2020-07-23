@@ -76,8 +76,17 @@ def main():
     current_env["MASTER_PORT"] = str(args.master_port)
     current_env["WORLD_SIZE"] = str(dist_world_size)
 
-    processes = []
+    # get list of processes we can phically bind to:
+    cmd = ["numactl", "--show"]
+    ps1 = subprocess.Popen(["numactl", "--show"], stdout=subprocess.PIPE)
+    ps2 = subprocess.Popen(["grep", "physcpubind"], stdin=ps1.stdout, stdout=subprocess.PIPE)
+    ps3 = subprocess.Popen(["awk", '{split($0,a,":"); print(a[2])}'], stdin=ps2.stdout, stdout=subprocess.PIPE)
+    output = ps3.communicate()[0]
+    physcpulist=[int(x) for x in output.decode().split()]
 
+    # process list
+    processes = []
+    
     for local_rank in range(0, args.nproc_per_node):
         # each process's rank
         dist_rank = args.nproc_per_node * args.node_rank + local_rank
@@ -89,11 +98,24 @@ def main():
                      local_rank * NCORES_PER_GPU + (NCORES_PER_GPU * NGPUS_PER_SOCKET * NSOCKETS),
                      (local_rank + 1) * NCORES_PER_GPU + (NCORES_PER_GPU * NGPUS_PER_SOCKET * NSOCKETS) - 1]
 
+        # make sure the cores exist
+        # first range:
+        cpu_actual_range = []
+        # major cores
+        for x in range(cpu_ranges[0], cpu_ranges[1]+1):
+            if x in physcpulist:
+                cpu_actual_range.append(str(x))
+        # hyperthreads
+        if not args.no_hyperthreads:
+            for x in range(cpu_ranges[2], cpu_ranges[3]+1):
+                if x in physcpulist:
+                    cpu_actual_range.append(str(x))
+
+        # binding string
+        cpu_bind_string = ",".join(cpu_actual_range)
+        
         numactlargs = []
-        if args.no_hyperthreads:
-            numactlargs += [ "--physcpubind={}-{}".format(*cpu_ranges[0:2]) ]
-        else:
-            numactlargs += [ "--physcpubind={}-{},{}-{}".format(*cpu_ranges) ]
+        numactlargs += [ "--physcpubind={}".format(cpu_bind_string) ]
 
         if not args.no_membind:
             memnode = local_rank // NGPUS_PER_SOCKET
@@ -109,6 +131,7 @@ def main():
               ] \
             + args.training_script_args
 
+        
         process = subprocess.Popen(cmd, env=current_env)
         processes.append(process)
 

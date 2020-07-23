@@ -5,6 +5,7 @@ export HDF5_USE_FILE_LOCKING=FALSE
 
 #mpi stuff
 mpioptions="--allow-run-as-root --map-by ppr:8:socket:PE=3"
+export OMP_NUM_THREADS=1
 
 for totalranks in 16; do
 
@@ -19,6 +20,6 @@ for totalranks in 16; do
     mpirun -np ${totalranks} ${mpioptions} \
 	   ${profilecmd} $(which python) train_orig.py \
 	   --yaml_config "config/UNet.yaml" \
-	   --comm_mode "openmpi-nccl" --enable_amp |& tee ${outfile}
+	   --comm_mode "openmpi-nccl" |& tee ${outfile}
 
 done
