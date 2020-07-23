@@ -1,0 +1,26 @@
+#!/bin/bash -l
+#SBATCH --nodes=1  --time=0:50:00
+#SBATCH -q special
+#SBATCH -C gpu 
+#SBATCH --account m1759
+#SBATCH --gres=gpu:8
+#SBATCH --exclusive
+#SBATCH -c 80
+#SBATCH -J multi8
+#SBATCH -o %x-%j.out
+#SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:new_scaler
+#SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
+
+#profilecmd="/usr/local/cuda/bin/nsys profile --stats=true --mpi-impl=openmpi --trace=cuda,cublas,nvtx,osrt,mpi -f true -o /data/profiles/profile_orig"
+profilecmd="/usr/local/cuda/bin/nvprof --profile-child-processes -o /data/profiles/profile_orig_rank%p"
+
+# Start training
+export HDF5_USE_FILE_LOCKING=FALSE
+srun shifter ${profilecmd} \
+     /opt/python/cp37-cp37m/bin/python bind_launch.py --nproc_per_node=8 --nsockets_per_node=2 --ncores_per_socket=40 --no_hyperthreads \
+     train.py --run_num=14 \
+     --yaml_config=./config/UNet.yaml \
+     --config=multi8
+
+date
+
