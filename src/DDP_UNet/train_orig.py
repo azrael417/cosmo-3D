@@ -142,11 +142,12 @@ def train(params, args, world_rank):
       bw_time /= float(epoch_step)
       io_time = max([step_time - fw_time - bw_time, 0])
       iters_per_sec = 1. / step_time
+      fw_per_sec = 1. / tr_time
     
       if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, epoch_time))
 	logging.info('train step time = {} ({} steps), logging time = {}'.format(tr_time, epoch_step, log_time))
-        logging.info('train samples/sec = {}'.format(iters_per_sec))
+        logging.info('train samples/sec = {} fw steps/sec = {}'.format(iters_per_sec, fw_per_sec))
         #logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
         #logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
         #             .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
