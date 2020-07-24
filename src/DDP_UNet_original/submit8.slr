@@ -5,7 +5,7 @@
 #SBATCH --gres=gpu:8
 #SBATCH --exclusive
 #SBATCH -c 80
-#SBATCH -J multi8
+#SBATCH -J pytorch_distributed
 #SBATCH -o %x-%j.out
 #SBATCH --image=registry.services.nersc.gov/tkurth/pytorch-cosmo:new_scaler
 #SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
@@ -17,7 +17,7 @@
 export HDF5_USE_FILE_LOCKING=FALSE
 srun shifter ${profilecmd} /opt/python/cp37-cp37m/bin/python -m torch.distributed.launch --nproc_per_node=8 train.py --run_num=14 \
      --yaml_config=./config/UNet.yaml \
-     --config=multi8
+     --config=multi8 --global_timing
 
 date
 

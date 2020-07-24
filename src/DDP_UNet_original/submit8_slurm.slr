@@ -1,7 +1,10 @@
 #!/bin/bash -l
-#SBATCH --nodes=1  --time=00:30:00
+#SBATCH -J pytorch_slurm
+#SBATCH -o %x-%j.out
+#SBATCH --nodes=1
+#SBATCH --time=00:30:00
 #SBATCH -q special
-#SBATCH -C gpu 
+#SBATCH -C gpu
 #SBATCH --account m1759
 #SBATCH --gres=gpu:8
 #SBATCH --exclusive
@@ -25,7 +28,7 @@ export OMP_NUM_THREADS=1
 #srun
 srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=cores \
      shifter /opt/python/cp37-cp37m/bin/python train_mpi_wireup.py \
-     --yaml_config "config/UNet.yaml"
+     --yaml_config "config/UNet.yaml" --global_timing
 
 date
 

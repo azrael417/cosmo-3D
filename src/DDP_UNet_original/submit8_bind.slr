@@ -17,7 +17,7 @@ profilecmd="/usr/local/cuda/bin/nvprof --profile-child-processes -o /data/profil
 # Start training
 export HDF5_USE_FILE_LOCKING=FALSE
 srun shifter ${profilecmd} \
-     /opt/python/cp37-cp37m/bin/python bind_launch.py --nproc_per_node=8 --nsockets_per_node=2 --ncores_per_socket=40 --no_hyperthreads \
+     /opt/python/cp37-cp37m/bin/python bind_launch.py --nproc_per_node=8 --nsockets_per_node=2 --ncores_per_socket=40 \
      train.py --run_num=14 \
      --yaml_config=./config/UNet.yaml \
      --config=multi8

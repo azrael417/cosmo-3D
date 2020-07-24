@@ -52,8 +52,7 @@ def train(params, args, world_rank):
   #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
     #model = DDP(model)
-    model = DDP(model, device_ids = [device.index], output_device = device.index)
-    
+    model = DDP(model, device_ids = [device.index], output_device = device.index)    
 
   iters = 0
   startEpoch = 0
@@ -74,6 +73,10 @@ def train(params, args, world_rank):
     
   with torch.autograd.profiler.emit_nvtx():
     for epoch in range(startEpoch, startEpoch+params.num_epochs):
+      
+      if args.global_timing:
+        dist.barrier()
+      
       start = time.time()
       tr_time = 0.
       log_time = 0.
@@ -142,7 +145,10 @@ def train(params, args, world_rank):
       # Save checkpoint
       #torch.save({'iters': iters, 'epoch':epoch, 'model_state': model.state_dict(), 
       #            'optimizer_state_dict': optimizer.state_dict()}, params.checkpoint_path)
-    
+      
+      if args.global_timing:
+        dist.barrier()
+        
       end = time.time()
       if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
@@ -158,6 +164,7 @@ if __name__ == '__main__':
   parser.add_argument("--run_num", default='00', type=str)
   parser.add_argument("--yaml_config", default='./config/UNet.yaml', type=str)
   parser.add_argument("--config", default='default', type=str)
+  parser.add_argument("--global_timing", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num
