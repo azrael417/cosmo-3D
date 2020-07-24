@@ -89,7 +89,7 @@ def train(params, args, world_rank):
         dist.barrier()
         
       start = time.time()
-      nsteps = 0
+      epoch_step = 0
       tr_time = 0.
       fw_time = 0.
       bw_time = 0.
@@ -125,7 +125,7 @@ def train(params, args, world_rank):
           bw_time += time.time()
 
         iters += 1
-        nsteps += 1
+        epoch_step += 1
 
         # ste pdone
         tr_end = time.time()
@@ -136,17 +136,20 @@ def train(params, args, world_rank):
         dist.barrier()
       end = time.time()
       epoch_time = end - start
-      step_time = epoch_time / float(nsteps)
-      tr_time /= float(nsteps)
-      fw_time /= float(nsteps)
-      bw_time /= float(nsteps)
-      io_time = max([tr_time - fw_time - bw_time, 0])
-      iters_per_sec = 1. / tr_time
+      step_time = epoch_time / float(epoch_step)
+      tr_time /= float(epoch_step)
+      fw_time /= float(epoch_step)
+      bw_time /= float(epoch_step)
+      io_time = max([step_time - fw_time - bw_time, 0])
+      iters_per_sec = 1. / step_time
     
       if world_rank==0:
-        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
-                     .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
+        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, epoch_time))
+	logging.info('train step time = {} ({} steps), logging time = {}'.format(tr_time, epoch_step, log_time))
+        logging.info('train samples/sec = {}'.format(iters_per_sec))
+        #logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
+        #logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
+        #             .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
 
 
 

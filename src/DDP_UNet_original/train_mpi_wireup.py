@@ -151,10 +151,12 @@ def train(params, args, world_rank):
         dist.barrier()
         
       end = time.time()
+      epoch_time = end-start
+      iters_per_sec = epoch_step / epoch_time;
       if world_rank==0:
-        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
+        logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, epoch_time))
         logging.info('train step time = {} ({} steps), logging time = {}'.format(tr_time, epoch_step, log_time))
-        logging.info('train samples/sec = {}'.format(epoch_step / tr_time))
+        logging.info('train samples/sec = {}'.format(iters_per_sec))
 
 
 
