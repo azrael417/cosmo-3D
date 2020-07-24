@@ -82,7 +82,7 @@ def train(params, args, world_rank):
     logging.info(model)
     logging.info("Starting Training Loop...")
 
-
+  
   with torch.autograd.profiler.emit_nvtx():
     for epoch in range(startEpoch, startEpoch+params.num_epochs):
       if args.global_timing:
@@ -135,7 +135,6 @@ def train(params, args, world_rank):
       io_time = max([step_time - fw_time - bw_time, 0])
       iters_per_sec = 1. / step_time
     
-      end = time.time()
       if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
         logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
