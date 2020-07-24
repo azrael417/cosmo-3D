@@ -83,7 +83,8 @@ def train(params, args, world_rank, local_rank):
 
 
   for epoch in range(startEpoch, startEpoch+params.num_epochs):
-    dist.barrier()
+    if args.global_timing:
+        dist.barrier()
     start = time.time()
     nsteps = 0
     fw_time = 0.
@@ -122,7 +123,8 @@ def train(params, args, world_rank, local_rank):
         nsteps += 1
 
     # epoch done
-    dist.barrier()
+    if args.global_timing:
+        dist.barrier()
     end = time.time()
     epoch_time = end - start
     step_time = epoch_time / float(nsteps)
@@ -148,6 +150,7 @@ if __name__ == '__main__':
   parser.add_argument("--comm_mode", default='slurm-nccl', type=str)
   parser.add_argument("--io_only", action="store_true")
   parser.add_argument("--enable_amp", action="store_true")
+  parser.add_argument("--global_timing", action="store_true")
   args = parser.parse_args()
   
   run_num = args.run_num
