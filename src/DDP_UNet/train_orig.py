@@ -87,21 +87,23 @@ def train(params, args, world_rank):
     for epoch in range(startEpoch, startEpoch+params.num_epochs):
       if args.global_timing:
         dist.barrier()
+        
       start = time.time()
       nsteps = 0
+      tr_time = 0.
       fw_time = 0.
       bw_time = 0.
       log_time = 0.
 
       model.train()
       for i, data in enumerate(train_data_loader, 0):
-        iters += 1
-
+        torch.cuda.nvtx.range_push("cosmo3D:forward step {}".format(iters))
+        tr_start = time.time()
         adjust_LR(optimizer, params, iters)
+        
         inp, tar = map(lambda x: x.to(device), data)
 
         if not args.io_only:
-
           # fw pass
           fw_time -= time.time()
           model.zero_grad()
@@ -121,8 +123,13 @@ def train(params, args, world_rank):
             loss.backward()
             optimizer.step()
           bw_time += time.time()
-      
+
+        iters += 1
         nsteps += 1
+
+        # ste pdone
+        tr_end = time.time()
+        tr_time += tr_end - tr_start
 
       # epoch done
       if args.global_timing:
@@ -130,10 +137,11 @@ def train(params, args, world_rank):
       end = time.time()
       epoch_time = end - start
       step_time = epoch_time / float(nsteps)
+      tr_time /= float(nsteps)
       fw_time /= float(nsteps)
       bw_time /= float(nsteps)
-      io_time = max([step_time - fw_time - bw_time, 0])
-      iters_per_sec = 1. / step_time
+      io_time = max([tr_time - fw_time - bw_time, 0])
+      iters_per_sec = 1. / tr_time
     
       if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))

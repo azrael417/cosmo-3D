@@ -22,4 +22,4 @@ mkdir -p /dev/shm/numa0 /dev/shm/numa1
 #srun
 srun -u -N ${SLURM_NNODES} -n ${totalranks} -c $(( 80 / ${rankspernode} )) --cpu_bind=sockets \
      shifter /opt/python/cp37-cp37m/bin/python train_orig.py \
-     --yaml_config "config/UNet.yaml"
+     --yaml_config "config/UNet.yaml" --global_timing
