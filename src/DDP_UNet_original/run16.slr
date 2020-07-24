@@ -4,7 +4,7 @@
 export HDF5_USE_FILE_LOCKING=FALSE
 python -m torch.distributed.launch --nproc_per_node=16 train.py --run_num=14 \
      --yaml_config=./config/UNet.yaml \
-     --config=multi8
+     --config=multi8 --global_timing
 
 date
 

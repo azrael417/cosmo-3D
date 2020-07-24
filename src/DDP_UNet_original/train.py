@@ -12,6 +12,7 @@ import torch.optim as optim
 from apex import amp, optimizers
 #from apex.parallel import DistributedDataParallel as DDP
 from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
 import torch.multiprocessing
 
 import logging

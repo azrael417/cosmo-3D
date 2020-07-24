@@ -20,6 +20,6 @@ for totalranks in 16; do
     mpirun -np ${totalranks} ${mpioptions} \
 	   ${profilecmd} $(which python) train_orig.py \
 	   --yaml_config "config/UNet.yaml" \
-	   --comm_mode "openmpi-nccl" |& tee ${outfile}
+	   --comm_mode "openmpi-nccl" --global_timing |& tee ${outfile}
 
 done

@@ -12,6 +12,7 @@ import torch.optim as optim
 from apex import optimizers
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
+
 import torch.cuda.amp as amp
 
 import logging
@@ -38,14 +39,14 @@ def adjust_LR(optimizer, params, iternum):
 
 
 
-def train(params, args, world_rank, local_rank):
+def train(params, args, world_rank):
 
   # set device
-  device = torch.device("cuda:{}".format(local_rank))  
+  device = torch.device("cuda:{}".format(args.local_rank))  
   
   #logging info
-  logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, local_rank))
-  train_data_loader = get_data_loader_distributed(params, world_rank, local_rank)
+  logging.info('rank {:d}, begin data loader init (local rank {:d})'.format(world_rank, args.local_rank))
+  train_data_loader = get_data_loader_distributed(params, world_rank, device.index)
   logging.info('rank %d, data loader initialized'%world_rank)
 
   # create model
@@ -55,15 +56,15 @@ def train(params, args, world_rank, local_rank):
     model.apply(model.get_weights_function(params.weight_init))
 
   optimizer = optimizers.FusedAdam(model.parameters(), lr = params.lr)
-  #model, optimizer = amp.initialize(model, optimizer, opt_level="O1") # for automatic mixed precision
   if params.distributed:
     model = DDP(model, device_ids = [device.index], output_device = device.index)
 
   # loss
-  criterion = UNet.CosmoLoss(params.LAMBDA_2)
+  #criterion = UNet.CosmoLoss(params.LAMBDA_2)
     
   # amp stuff
-  gscaler = amp.GradScaler()
+  if args.enable_amp:
+    gscaler = amp.GradScaler()
     
   iters = 0
   startEpoch = 0
@@ -82,31 +83,32 @@ def train(params, args, world_rank, local_rank):
     logging.info("Starting Training Loop...")
 
 
-  for epoch in range(startEpoch, startEpoch+params.num_epochs):
-    if args.global_timing:
+  with torch.autograd.profiler.emit_nvtx():
+    for epoch in range(startEpoch, startEpoch+params.num_epochs):
+      if args.global_timing:
         dist.barrier()
-    start = time.time()
-    nsteps = 0
-    fw_time = 0.
-    bw_time = 0.
-    log_time = 0.
+      start = time.time()
+      nsteps = 0
+      fw_time = 0.
+      bw_time = 0.
+      log_time = 0.
 
-    model.train()
-    with torch.autograd.profiler.emit_nvtx():
+      model.train()
       for i, data in enumerate(train_data_loader, 0):
         iters += 1
 
-        #adjust_LR(optimizer, params, iters)
+        adjust_LR(optimizer, params, iters)
         inp, tar = map(lambda x: x.to(device), data)
 
         if not args.io_only:
 
           # fw pass
           fw_time -= time.time()
-          optimizer.zero_grad()
+          model.zero_grad()
           with amp.autocast(args.enable_amp):
             gen = model(inp)
-            loss = criterion(gen, tar)
+            #loss = criterion(gen, tar)
+            loss = UNet.loss_func(gen, tar, params)
           fw_time += time.time()
 
           # bw pass
@@ -122,19 +124,19 @@ def train(params, args, world_rank, local_rank):
       
         nsteps += 1
 
-    # epoch done
-    if args.global_timing:
+      # epoch done
+      if args.global_timing:
         dist.barrier()
-    end = time.time()
-    epoch_time = end - start
-    step_time = epoch_time / float(nsteps)
-    fw_time /= float(nsteps)
-    bw_time /= float(nsteps)
-    io_time = max([step_time - fw_time - bw_time, 0])
-    iters_per_sec = 1. / step_time
+      end = time.time()
+      epoch_time = end - start
+      step_time = epoch_time / float(nsteps)
+      fw_time /= float(nsteps)
+      bw_time /= float(nsteps)
+      io_time = max([step_time - fw_time - bw_time, 0])
+      iters_per_sec = 1. / step_time
     
-    end = time.time()
-    if world_rank==0:
+      end = time.time()
+      if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
         logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
                      .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
@@ -172,6 +174,7 @@ if __name__ == '__main__':
 
   # common stuff
   comm_local_rank = comm_rank % torch.cuda.device_count()
+  args.local_rank = comm_local_rank
   comm_port = "29500"
   os.environ["MASTER_ADDR"] = comm_addr
   os.environ["MASTER_PORT"] = comm_port
@@ -185,10 +188,11 @@ if __name__ == '__main__':
   torch.cuda.set_device(comm_local_rank)
 
   torch.backends.cudnn.benchmark = True
+  
   args.resuming = False
 
   # set number of gpu
-  params.ngpu = torch.cuda.device_count()
+  #params.ngpu = torch.cuda.device_count()
   
   # Set up directory
   baseDir = './expts/'
@@ -207,7 +211,7 @@ if __name__ == '__main__':
   if os.path.isfile(params.checkpoint_path):
     args.resuming=True
 
-  train(params, args, comm_rank, comm_local_rank)
+  train(params, args, comm_rank)
   #if comm_rank == 0:
     #args.tboard_writer.flush()
     #args.tboard_writer.close()
