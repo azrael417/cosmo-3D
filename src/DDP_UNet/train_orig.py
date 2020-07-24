@@ -224,7 +224,7 @@ if __name__ == '__main__':
   # set device here to avoid unnecessary surprises
   torch.cuda.set_device(comm_local_rank)
 
-  #torch.backends.cudnn.benchmark = True
+  torch.backends.cudnn.benchmark = True
   args.resuming = False
 
   # set number of gpu
