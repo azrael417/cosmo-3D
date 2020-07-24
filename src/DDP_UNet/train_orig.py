@@ -49,8 +49,8 @@ def train(params, args, world_rank, local_rank):
   logging.info('rank %d, data loader initialized'%world_rank)
 
   # create model
-  model = UNet.UNet(params)
-  model.to(device)
+  model = UNet.UNet(params).to(device)
+
   if not args.resuming:
     model.apply(model.get_weights_function(params.weight_init))
 
@@ -82,8 +82,8 @@ def train(params, args, world_rank, local_rank):
     logging.info("Starting Training Loop...")
 
 
-  #for i, data in enumerate(train_data_loader, 0):                                                                                                      
   for epoch in range(startEpoch, startEpoch+params.num_epochs):
+    dist.barrier()
     start = time.time()
     nsteps = 0
     fw_time = 0.
@@ -91,8 +91,6 @@ def train(params, args, world_rank, local_rank):
     log_time = 0.
 
     model.train()
-    step_time = time.time()
-
     with torch.autograd.profiler.emit_nvtx():
       for i, data in enumerate(train_data_loader, 0):
         iters += 1
@@ -125,60 +123,19 @@ def train(params, args, world_rank, local_rank):
 
     # epoch done
     dist.barrier()
-    step_time = (time.time() - step_time) / float(nsteps)
+    end = time.time()
+    epoch_time = end - start
+    step_time = epoch_time / float(nsteps)
     fw_time /= float(nsteps)
     bw_time /= float(nsteps)
     io_time = max([step_time - fw_time - bw_time, 0])
     iters_per_sec = 1. / step_time
-    
-    ## Output training stats
-    #model.eval()
-    #if world_rank==0:
-    #  log_start = time.time()
-    #  gens = []
-    #  tars = []
-    #  with torch.no_grad():
-    #    for i, data in enumerate(train_data_loader, 0):
-    #      if i>=16:
-    #        break
-    #      #inp, tar = map(lambda x: x.to(device), data)
-    #      inp, tar = data
-    #      gen = model(inp)
-    #      gens.append(gen.detach().cpu().numpy())
-    #      tars.append(tar.detach().cpu().numpy())
-    #  gens = np.concatenate(gens, axis=0)
-    #  tars = np.concatenate(tars, axis=0)
-    #
-    #  # Scalars
-    #  args.tboard_writer.add_scalar('G_loss', loss.item(), iters)
-    #
-    #  # Plots
-    #  fig, chi, L1score = meanL1(gens, tars)
-    #  args.tboard_writer.add_figure('pixhist', fig, iters, close=True)
-    #  args.tboard_writer.add_scalar('Metrics/chi', chi, iters)
-    #  args.tboard_writer.add_scalar('Metrics/rhoL1', L1score[0], iters)
-    #  args.tboard_writer.add_scalar('Metrics/vxL1', L1score[1], iters)
-    #  args.tboard_writer.add_scalar('Metrics/vyL1', L1score[2], iters)
-    #  args.tboard_writer.add_scalar('Metrics/vzL1', L1score[3], iters)
-    #  args.tboard_writer.add_scalar('Metrics/TL1', L1score[4], iters)
-    #  
-    #  fig = generate_images(inp.detach().cpu().numpy()[0], gens[-1], tars[-1])
-    #  args.tboard_writer.add_figure('genimg', fig, iters, close=True)
-    #  log_end = time.time()
-    #  log_time += log_end - log_start
-
-    #  # Save checkpoint
-    #  torch.save({'iters': iters, 'epoch':epoch, 'model_state': model.state_dict(), 
-    #              'optimizer_state_dict': optimizer.state_dict()}, params.checkpoint_path)
     
     end = time.time()
     if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
         logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
                      .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
-
-    # finalize
-    dist.barrier()
 
 
 
@@ -228,7 +185,7 @@ if __name__ == '__main__':
   args.resuming = False
 
   # set number of gpu
-  params.ngpu = comm_size
+  params.ngpu = torch.cuda.device_count()
   
   # Set up directory
   baseDir = './expts/'
