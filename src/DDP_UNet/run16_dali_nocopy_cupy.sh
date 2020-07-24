@@ -20,6 +20,7 @@ for totalranks in 16; do
     mpirun -np ${totalranks} ${mpioptions} \
 	   ${profilecmd} $(which python) train_dali_cupy.py \
 	   --yaml_config "config/UNet_transpose.yaml" \
-	   --comm_mode "openmpi-nccl" --enable_amp --no_copy |& tee ${outfile}
+	   --global_timing \
+	   --comm_mode "openmpi-nccl" --no_copy |& tee ${outfile}
 
 done

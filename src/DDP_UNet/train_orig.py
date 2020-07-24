@@ -60,7 +60,7 @@ def train(params, args, world_rank):
     model = DDP(model, device_ids = [device.index], output_device = device.index)
 
   # loss
-  #criterion = UNet.CosmoLoss(params.LAMBDA_2)
+  criterion = UNet.CosmoLoss(params.LAMBDA_2)
     
   # amp stuff
   if args.enable_amp:
@@ -100,7 +100,8 @@ def train(params, args, world_rank):
         torch.cuda.nvtx.range_push("cosmo3D:forward step {}".format(iters))
         tr_start = time.time()
         adjust_LR(optimizer, params, iters)
-        
+
+        # fetch data
         inp, tar = map(lambda x: x.to(device), data)
 
         if not args.io_only:
@@ -109,8 +110,7 @@ def train(params, args, world_rank):
           model.zero_grad()
           with amp.autocast(args.enable_amp):
             gen = model(inp)
-            #loss = criterion(gen, tar)
-            loss = UNet.loss_func(gen, tar, params)
+            loss = criterion(gen, tar)
           fw_time += time.time()
 
           # bw pass
@@ -148,10 +148,6 @@ def train(params, args, world_rank):
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, epoch_time))
         logging.info('train step time = {} ({} steps), logging time = {}'.format(tr_time, epoch_step, log_time))
         logging.info('train samples/sec = {} fw steps/sec = {}'.format(iters_per_sec, fw_per_sec))
-        #logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
-        #logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
-        #             .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
-
 
 
 if __name__ == '__main__':
