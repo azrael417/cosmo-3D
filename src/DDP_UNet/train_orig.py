@@ -81,18 +81,17 @@ def train(params, args, world_rank, local_rank):
     logging.info(model)
     logging.info("Starting Training Loop...")
 
-
-  for epoch in range(startEpoch, startEpoch+params.num_epochs):
-    if args.global_timing:
+  with torch.autograd.profiler.emit_nvtx():
+    for epoch in range(startEpoch, startEpoch+params.num_epochs):
+      if args.global_timing:
         dist.barrier()
-    start = time.time()
-    nsteps = 0
-    fw_time = 0.
-    bw_time = 0.
-    log_time = 0.
+      start = time.time()
+      nsteps = 0
+      fw_time = 0.
+      bw_time = 0.
+      log_time = 0.
 
-    model.train()
-    with torch.autograd.profiler.emit_nvtx():
+      model.train()
       for i, data in enumerate(train_data_loader, 0):
         iters += 1
 
@@ -122,19 +121,18 @@ def train(params, args, world_rank, local_rank):
       
         nsteps += 1
 
-    # epoch done
-    if args.global_timing:
+      # epoch done
+      if args.global_timing:
         dist.barrier()
-    end = time.time()
-    epoch_time = end - start
-    step_time = epoch_time / float(nsteps)
-    fw_time /= float(nsteps)
-    bw_time /= float(nsteps)
-    io_time = max([step_time - fw_time - bw_time, 0])
-    iters_per_sec = 1. / step_time
+      end = time.time()
+      epoch_time = end - start
+      step_time = epoch_time / float(nsteps)
+      fw_time /= float(nsteps)
+      bw_time /= float(nsteps)
+      io_time = max([step_time - fw_time - bw_time, 0])
+      iters_per_sec = 1. / step_time
     
-    end = time.time()
-    if world_rank==0:
+      if world_rank==0:
         logging.info('Time taken for epoch {} is {} sec'.format(epoch + 1, end-start))
         logging.info('total time / step = {}, fw time / step = {}, bw time / step = {}, exposed io time / step = {}, iters/s = {}, logging time = {}'
                      .format(step_time, fw_time, bw_time, io_time, iters_per_sec, log_time))
