@@ -11,7 +11,7 @@
 #SBATCH --volume="/global/cscratch1/sd/tkurth/cosmo_data:/data;/dev/infiniband:/sys/class/infiniband_verbs"
 
 #profilecmd="/usr/local/cuda/bin/nsys profile --stats=true --mpi-impl=openmpi --trace=cuda,cublas,nvtx,osrt,mpi -f true -o /data/profiles/profile_orig"
-profilecmd="/usr/local/cuda/bin/nvprof --profile-child-processes -o /data/profiles/profile_orig_rank%p"
+#profilecmd="/usr/local/cuda/bin/nvprof --profile-child-processes -o /data/profiles/profile_orig_rank%p"
 
 # Start training
 export HDF5_USE_FILE_LOCKING=FALSE
